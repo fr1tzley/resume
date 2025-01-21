@@ -1,0 +1,47 @@
+
+Key Requirements
+
+The application should accept the following file uploads:
+
+Resume
+
+Job description
+
+Interview notes
+
+Using AI, the application should:
+
+Extract and analyze the key information from the files.
+
+Generate a scorecard based on the JD’s requirements.
+
+Provide a decision on the candidate's fit, with insights into strengths, gaps, and areas for improvement.
+
+The solution should be presented as a functional web application with a user-friendly interface.
+
+
+Deliverables
+
+A working web application (URL or demo link).
+
+A brief explanation (5-10 slides or a short document) covering:
+
+Your approach to solving the task.
+
+Tools and technologies used.
+
+Challenges faced and areas for improvement.
+
+
+HOW TO SATISFY EACH THING 
+
+Resume uploads:
+Simple HTML frontend with 3 upload buttons. This should call some sort of endpoint that sends the file to the backend
+with a POST, featuring some argument indicating what type of data it is 
+
+Extract key information:
+Use a combination of OpenAI and spaCy to pull out keywords from the job description and resume. The score can be the number 
+that match, plus maybe a subjective element from the AI. 
+
+Generating Scorecard:
+Just make a call to the OpenAI API, maybe with a few examples.
