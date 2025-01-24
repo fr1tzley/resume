@@ -4,7 +4,7 @@ import os
 import openai
 from openai import OpenAI
 
-from gpt_messages import EDUCATION, EXPERIENCES, INTERVIEW_JOB_FIT, INTERVIEW_STRENGTHS, INTERVIEW_WEAKNESSES, REQUIREMENTS, SKILLS
+#from gpt_messages import EDUCATION, EXPERIENCES, INTERVIEW_JOB_FIT, INTERVIEW_STRENGTHS, INTERVIEW_WEAKNESSES, REQUIREMENTS, SKILLS
 from message_utils import decision_info_to_messages, interview_to_messages, resume_to_messages, strengths_to_messages, weaknesses_to_messages
 
 load_dotenv()
