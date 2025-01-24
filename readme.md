@@ -63,8 +63,8 @@ Once the backend returns it's results, the frontend redirects to a new page to d
  
 # Areas of Improvement
 - The project currently uses the untrained default GPT-4o-mini, and it's output parsing is highly brittle and dependent on the formatting that the AI returns it's answer in. This could easily break. This area could be improved by
-        - Providing more graceful, principled error handling and more flexible output parsing
-        - Using the OpenAI Assistants or Fine-Tuning APIs to ensure the formatting of the output is consistent.
+ - Providing more graceful, principled error handling and more flexible output parsing
+ - Using the OpenAI Assistants or Fine-Tuning APIs to ensure the formatting of the output is consistent.
 - The parsing of the resume is very simple, highly brittle and extremely dependent on the formatting of the input files. This is fine for a demo, but an actual production application should have much more sophisticated parsing using a natural-language processing library like spaCy, if not another OpenAI model.
 - The frontend is quite basic. Adding things like progress bars, colored components to visually indicate a candidate's performance, and so on would make it more visually appealing and easy to parse.
 - The frontend only display a simple spinner that doesn't give the user a sense of how long is left to wait, or whether the backend is actually working on fulfilling it's request. It would be useful to add a loading bar and have the backend send periodic updates on the amount of work left to do.
