@@ -1,7 +1,7 @@
 # Resume Reader Assignment
  
-This is my submission for the work assignment for Makana Partners, ltd.
- 
+A simple web-based resume evaluation application.
+
 # Setup
  
 Prerequisites:Python 3.12
@@ -44,16 +44,21 @@ The data scraping component is quite simple, as PDF data extraction is a very fi
  
 - From the resume, the program extracts the applicant's work history, educational history, skills, and certifications.
 - From the job posting, the program extracts the requirements and responsibilites of the job.
-- From the interview notes, the
+- From the interview notes, the program extracts the strengths, areas of improvement, and overall impressions that the interviewer noted for the applicant.
  
-The AI component features several calls to the OpenAI API to convert all the provided documents into a final recommendation. When using LLMs, rather than feeding it all the information at once, it is usually better to guide it through a chain of reasoning-having it draw conclusions on several smaller tasks, and then make it's overall conclusion. Here are the steps of that process.
+The AI component features several calls to the OpenAI API to convert all the provided documents into a final recommendation. When using LLMs, rather than feeding it all the information at once, it is usually better to guide it through a chain of reasoning-having it draw conclusions on several smaller tasks, and then make it's overall conclusion.  
+At each step, the AI is given two messages explaining what it is expected to do. The first is a TASK message, which gives it a high-level overview of it's role and the task it is expected to accomplish. The second is an INSTRUCTIONS message, which gives it a specific set of numbered instructions on how to accomplish that task. Giving LLMs instructions in this format generally improves their performance, as the motivation and specificity improves their ability to grasp what the user is requesting.
+
+Here are the individual steps of the generation process.
  
-- Using the text of the resume, the AI goes through the job requirements, marking off whether or not that requirement is satisfied and providing a brief explanation. This allows the AI to trim away the irrelevant parts of the resume, while still preserving the necessary components by describing them in the rationale.
+- Using the text of the resume, the AI goes through the job requirements, marking off whether or not that requirement is satisfied and providing a brief explanation. This allows the AI to trim away the irrelevant parts of the resume, while still preserving the necessary components by describing them in the rationale. 
 - Analyzing the interview, the AI provides a brief summary of the performance, allowing the end user to view the applicant's interview performance without reading the full notes.
 - Using the strengths listed in the interview and the list of satisfied requirements it previously created, the AI generates a list of strengths for the applicant.
 - Using the areas of improvement listed in the interview and the list of unsatisfied requirements it previously created, the AI generates a list of areas of improvement for the applicant.
 - Using all of the previously-generated content, the AI makes a final decision on what it's recommendation for the client is, and expresses it in a brief few-sentence explanation.
- 
+- For display purposes, basic Python is used to count the number of satisfied requirements, unsatisfied requirements, strengths, and weaknesses found by the model.
+
+
 Each of the pieces of text generated above are returned by the Flask service as a response to the ``upload`` endpoint.
  
 ### Frontend
@@ -62,9 +67,10 @@ The frontend features a simple HTML form that takes the 3 PDF uploads, one for e
 Once the backend returns it's results, the frontend redirects to a new page to display them. The overall decision is displayed in a text box, and number boxes directly below display the number of satisfied requirements, unsatisfied requirements, strengths, and areas of improvement found in the applicant's application. Below that, there are text boxes providing written explanation of each of those.
  
 # Areas of Improvement
-- The project currently uses the untrained default GPT-4o-mini, and it's output parsing is highly brittle and dependent on the formatting that the AI returns it's answer in. This could easily break. This area could be improved by
-        - Providing more graceful, principled error handling and more flexible output parsing
-        - Using the OpenAI Assistants or Fine-Tuning APIs to ensure the formatting of the output is consistent.
+- The project currently uses the untrained default GPT-4o-mini, and it's output parsing is quite dependent on the formatting that the AI returns it's answer in. This could easily break. This area could be improved by
+   - Providing more graceful, principled error handling and more flexible output parsing
+   - Using the OpenAI Assistants or Fine-Tuning APIs to ensure the formatting of the output is consistent.
+- I currently don't include the responsibilities portion of the job posting, as during testing, using such a high amount of text led me to constantly bumping up against the rate limit set by OpenAI. Adding it in would be trivial, but would require access to an account with a higher rate limit than my own, which was made yesterday and as such is on the lowest usage tier.
 - The parsing of the resume is very simple, highly brittle and extremely dependent on the formatting of the input files. This is fine for a demo, but an actual production application should have much more sophisticated parsing using a natural-language processing library like spaCy, if not another OpenAI model.
 - The frontend is quite basic. Adding things like progress bars, colored components to visually indicate a candidate's performance, and so on would make it more visually appealing and easy to parse.
 - The frontend only display a simple spinner that doesn't give the user a sense of how long is left to wait, or whether the backend is actually working on fulfilling it's request. It would be useful to add a loading bar and have the backend send periodic updates on the amount of work left to do.
