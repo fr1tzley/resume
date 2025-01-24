@@ -1,7 +1,7 @@
 # Resume Reader Assignment
  
-This is my submission for the work assignment for Makana Partners, ltd.
- 
+A simple web-based resume evaluation application.
+
 # Setup
  
 Prerequisites:Python 3.12
