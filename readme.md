@@ -44,7 +44,7 @@ The data scraping component is quite simple, as PDF data extraction is a very fi
  
 - From the resume, the program extracts the applicant's work history, educational history, skills, and certifications.
 - From the job posting, the program extracts the requirements and responsibilites of the job.
-- From the interview notes, the
+- From the interview notes, the program extracts the strengths, areas of improvement, and overall impressions that the interviewer noted for the applicant.
  
 The AI component features several calls to the OpenAI API to convert all the provided documents into a final recommendation. When using LLMs, rather than feeding it all the information at once, it is usually better to guide it through a chain of reasoning-having it draw conclusions on several smaller tasks, and then make it's overall conclusion.  
 At each step, the AI is given two messages explaining what it is expected to do. The first is a TASK message, which gives it a high-level overview of it's role and the task it is expected to accomplish. The second is an INSTRUCTIONS message, which gives it a specific set of numbered instructions on how to accomplish that task. Giving LLMs instructions in this format generally improves their performance, as the motivation and specificity improves their ability to grasp what the user is requesting.
