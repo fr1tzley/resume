@@ -59,7 +59,7 @@ EDUCATION_PATTERN = [
 ] + DATE_RANGE_ENDING_WITH_YEAR
 
 REGEX_DATE = [
-    {"TEXT": {"REGEX":"((January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}|Present)"}}              
+    {"TEXT": {"REGEX":"((January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}|Present)"}},              
     {"IS_SPACE": True, "OP": "?"},
     {"TEXT": "–"},
     {"IS_SPACE": True, "OP": "+"},

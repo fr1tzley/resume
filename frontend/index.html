@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4285f4;
+            color: #ffffff;
+            font-size: 16px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #357ae8;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Upload Your Files</h1>
+        <form id="fileUploadForm" enctype="multipart/form-data">
+            <div class="file-input">
+                <label for="resume">Resume (PDF/DOCX):</label>
+                <input type="file" id="resume" name="resume" accept=".pdf, .docx" required>
+            </div>
+            <div class="file-input">
+                <label for="job-description">Job Description (PDF/DOCX):</label>
+                <input type="file" id="job-description" name="job_description" accept=".pdf, .docx" required>
+            </div>
+            <div class="file-input">
+                <label for="interview-notes">Interview Notes (PDF/DOCX):</label>
+                <input type="file" id="interview-notes" name="interview_notes" accept=".pdf, .docx" required>
+            </div>
+            <button type="button" id="submit-button" onclick="submitForm()">Submit</button>
+        </form>
+        <div id="spinner" style="display: none; margin-top: 20px;">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        async function submitForm() {
+            const form = document.getElementById('fileUploadForm');
+            const submitButton = document.getElementById("submit-button")
+            const formData = new FormData(form);
+
+            const spinner = document.getElementById('spinner');
+    
+            spinner.style.display = 'block';
+            submitButton.disabled = true
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                spinner.style.display = 'none';
+                submitButton.disabled=false
+
+                // Redirect to response.html with query parameters
+                const url = new URL('./response.html', window.location.href);
+                for (const key in data) {
+                    url.searchParams.append(key, data[key]);
+                }
+                window.location.href = url;
+            } catch (error) {
+                spinner.style.display = 'none';
+                submitButton.disabled=false
+                alert('An error occurred while uploading the files. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

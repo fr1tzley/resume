@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Response Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .response-container {
+            background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 100%;
+            box-sizing: border-box;
+            width: 400px;
+            text-align: left;
+        }
+
+        h1 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .response-field {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        textarea {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    resize: none; /* Changed from vertical to none */
+    overflow: hidden; /* Hide scrollbars */
+    min-height: 30px; /* Minimum height */
+}
+    </style>
+</head>
+<body>
+    <div class="response-container">
+        <h1>Response Details</h1>
+        <div class="response-field">
+            <label for="overall_conclusion">Overall Conclusion:</label>
+            <textarea id="overall_conclusion" name="overall_conclusion" readonly></textarea>
+        </div>
+        <div class="response-field">
+            <label for="satisfied_requirements">Satisfied Requirements:</label>
+            <textarea id="satisfied_requirements" name="satisfied_requirements" readonly></textarea>
+        </div>
+        <div class="response-field">
+            <label for="unsatisfied_requirements">Unsatisfied Requirements:</label>
+            <textarea id="unsatisfied_requirements" name="unsatisfied_requirements" readonly></textarea>
+        </div>
+        <div class="response-field">
+            <label for="interview_fit">Interview Fit:</label>
+            <textarea id="interview_fit" name="interview_fit" readonly></textarea>
+        </div>
+        <div class="response-field">
+            <label for="strengths">Strengths:</label>
+            <textarea id="strengths" name="strengths" readonly></textarea>
+        </div>
+        <div class="response-field">
+            <label for="areas_of_improvement">Areas of Improvement:</label>
+            <textarea id="areas_of_improvement" name="areas_of_improvement" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+    
+            const paramsToInputs = {
+                overall_conclusion: 'overall_conclusion',
+                requirements_fit: 'requirements_fit',
+                unsatisfied_requirements: "unsatisfied_requirements",
+                satisfied_requirements: "satisfied_requirements",
+                interview_fit: 'interview_fit',
+                strengths: 'strengths',
+                areas_of_improvement: 'areas_of_improvement'
+            };
+    
+            for (const [param, inputId] of Object.entries(paramsToInputs)) {
+                const textarea = document.getElementById(inputId);
+                const value = urlParams.get(param);
+                if (value !== null) {
+                    textarea.value = decodeURIComponent(value);
+                    // Auto-resize textarea
+                    textarea.style.height = 'auto';
+                    textarea.style.height = textarea.scrollHeight + 'px';
+                }
+            }
+    
+            // Add event listener to dynamically resize on input
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = this.scrollHeight + 'px';
+                });
+            });
+        };
+    </script>
+</body>
+</html>
