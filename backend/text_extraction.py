@@ -11,7 +11,6 @@ from pypdf import PdfReader
 import spacy
 from gpt_messages import EXPERIENCES, EDUCATION, SKILLS
 from nlp_patterns import SINGLE_BULLET, JOB_PATTERN_2, WORD_COMMA_WORD, DATE_RANGE_ENDING_WITH_PRESENT, DATE_RANGE_ENDING_WITH_YEAR
-from read_resume import read_file
 from spacy.matcher import Matcher
 import os
 
@@ -38,6 +37,7 @@ def extract_file_text(filepath):
         for p in reader.pages:
             fulltext += p.extract_text()
         return fulltext
+    
 def extract_resume_info(filepath):
     fulltext = extract_file_text(filepath)
     rest,certifications = fulltext.split(" \nCertifications:  \n")
