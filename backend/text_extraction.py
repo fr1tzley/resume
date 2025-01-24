@@ -40,7 +40,7 @@ def extract_file_text(filepath):
         return fulltext
 def extract_resume_info(filepath):
     fulltext = extract_file_text(filepath)
-    rest,_ = fulltext.split(" \nCertifications:  \n")
+    rest,certifications = fulltext.split(" \nCertifications:  \n")
     rest, education = rest.split("\nEducation:  \n")
     education = education.split("●")
     rest,employment_history = rest.split("\nProfessional  Experience:  \n")
@@ -49,7 +49,7 @@ def extract_resume_info(filepath):
     _,skills = rest.split("\nSkills:  \n")
     #skills = skills.split("●")
 
-    return (employment_history, education, skills)
+    return (employment_history, education, skills, certifications)
 
 def extract_interview_notes(filepath):
     with open(filepath,"rb") as pdf:
@@ -77,8 +77,8 @@ def extract_job_description(filepath):
         for p in reader.pages:
             fulltext += p.extract_text()
         try:
-            rest, requirements = fulltext.split(" \nResponsibilities: ")
-            rest, responsibilities = fulltext.split(" \nResponsibilities: ")
+            rest, requirements = fulltext.split(" \nRequirements:  \n")
+            rest, responsibilities = rest.split(" \nResponsibilities:  \n")
 
             return requirements.split("●"), responsibilities.split("●")
         except Exception as e:

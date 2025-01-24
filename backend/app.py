@@ -22,25 +22,6 @@ def hello_world():
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
-    """
-    return jsonify({
-        "overall_conclusion": ""
-            im trying to
-
-            display
-
-            across
-
-            several lines
-                    
-        "",
-        "strengths": "b",
-        "areas_of_improvement": "c",
-        "interview_fit":"d",
-        "satisfied_requirements":"e",
-        "unsatisfied_requirements":"f"
-    }), 200
-    """
     required_files = ['job_description', 'resume', 'interview_notes']
     missing_files = [file for file in required_files if file not in request.files]
     
@@ -60,10 +41,26 @@ def upload_files():
         saved_files[file_key] = file_path
 
     strengths, areas_of_improvement, job_fit = extract_interview_notes(saved_files["interview_notes"])
-    responsibilities, requirements = extract_job_description(saved_files["job_description"]) 
+    requirements, responsibilities = extract_job_description(saved_files["job_description"]) 
     resume_info = extract_resume_info(saved_files["resume"])
+    """
+    return jsonify({
+        "satisfied_requirements": "b",
+        "unsatisfied_requirements": "c",
+        "interview_fit": "d",
+        "strengths": "e",
+        "areas_of_improvement": "f",
+        "overall_conclusion": "g",
+        "strengths_count": "1",
+        "areas_of_improvement_count": "2",
+        "satisfied_requirements_count": "3",
+        "unsatisfied_requirements_count": "4"
+
+    }), 200
+    """
     gpt_results = get_gpt_results(resume_info, (strengths, areas_of_improvement, job_fit), requirements, responsibilities)
     return jsonify(gpt_results), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
+

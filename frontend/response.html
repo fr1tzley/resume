@@ -13,18 +13,65 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
 
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-areas: 
+                "box1 box2"
+                "box3 box4"
+                "full-box full-box";
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .metric-box {
+            background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-box:nth-child(1) { grid-area: box1; }
+        .metric-box:nth-child(2) { grid-area: box2; }
+        .metric-box:nth-child(3) { grid-area: box3; }
+        .metric-box:nth-child(4) { grid-area: box4; }
+        .metric-box:nth-child(5) { 
+            grid-area: full-box; 
+            grid-column: 1 / -1; 
+        }
+
+        .metric-title {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
         .response-container {
             background: #ffffff;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
             padding: 20px;
-            max-width: 100%;
+            width: 100%;
             box-sizing: border-box;
-            width: 400px;
-            text-align: left;
         }
 
         h1 {
@@ -46,46 +93,71 @@
         }
 
         textarea {
-    width: 100%;
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-    box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
-    resize: none; /* Changed from vertical to none */
-    overflow: hidden; /* Hide scrollbars */
-    min-height: 30px; /* Minimum height */
-}
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            resize: none;
+            overflow: hidden;
+            min-height: 30px;
+        }
     </style>
 </head>
 <body>
-    <div class="response-container">
-        <h1>Response Details</h1>
-        <div class="response-field">
-            <label for="overall_conclusion">Overall Conclusion:</label>
-            <textarea id="overall_conclusion" name="overall_conclusion" readonly></textarea>
+    <div class="container">
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <div class="metric-title">Satisfied Requirements</div>
+                <div class="metric-value" id="satisfied_requirements_count">-</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Unsatisfied Requirements</div>
+                <div class="metric-value" id="unsatisfied_requirements_count">-</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Strengths</div>
+                <div class="metric-value" id="strengths_count">-</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Areas of Improvement</div>
+                <div class="metric-value" id="areas_of_improvement_count">-</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Conclusion</div>
+                <div class="metric-value" id="conclusion_oneline">-</div>
+            </div>
         </div>
-        <div class="response-field">
-            <label for="satisfied_requirements">Satisfied Requirements:</label>
-            <textarea id="satisfied_requirements" name="satisfied_requirements" readonly></textarea>
-        </div>
-        <div class="response-field">
-            <label for="unsatisfied_requirements">Unsatisfied Requirements:</label>
-            <textarea id="unsatisfied_requirements" name="unsatisfied_requirements" readonly></textarea>
-        </div>
-        <div class="response-field">
-            <label for="interview_fit">Interview Fit:</label>
-            <textarea id="interview_fit" name="interview_fit" readonly></textarea>
-        </div>
-        <div class="response-field">
-            <label for="strengths">Strengths:</label>
-            <textarea id="strengths" name="strengths" readonly></textarea>
-        </div>
-        <div class="response-field">
-            <label for="areas_of_improvement">Areas of Improvement:</label>
-            <textarea id="areas_of_improvement" name="areas_of_improvement" readonly></textarea>
+
+        <div class="response-container">
+            <h1>Response Details</h1>
+            <div class="response-field">
+                <label for="overall_conclusion">Overall Conclusion Details:</label>
+                <textarea id="overall_conclusion" name="overall_conclusion" readonly></textarea>
+            </div>
+            <div class="response-field">
+                <label for="satisfied_requirements">Satisfied Requirements:</label>
+                <textarea id="satisfied_requirements" name="satisfied_requirements" readonly></textarea>
+            </div>
+            <div class="response-field">
+                <label for="unsatisfied_requirements">Unsatisfied Requirements:</label>
+                <textarea id="unsatisfied_requirements" name="unsatisfied_requirements" readonly></textarea>
+            </div>
+            <div class="response-field">
+                <label for="interview_fit">Interview Fit:</label>
+                <textarea id="interview_fit" name="interview_fit" readonly></textarea>
+            </div>
+            <div class="response-field">
+                <label for="strengths">Strengths:</label>
+                <textarea id="strengths" name="strengths" readonly></textarea>
+            </div>
+            <div class="response-field">
+                <label for="areas_of_improvement">Areas of Improvement:</label>
+                <textarea id="areas_of_improvement" name="areas_of_improvement" readonly></textarea>
+            </div>
         </div>
     </div>
 
@@ -100,18 +172,33 @@
                 satisfied_requirements: "satisfied_requirements",
                 interview_fit: 'interview_fit',
                 strengths: 'strengths',
-                areas_of_improvement: 'areas_of_improvement'
+                areas_of_improvement: 'areas_of_improvement',
+                satisfied_requirements_count: 'satisfied_requirements_count',
+                unsatisfied_requirements_count: 'unsatisfied_requirements_count',
+                strengths_count: 'strengths_count',
+                areas_of_improvement_count: 'areas_of_improvement_count',
+                conclusion_oneline: "conclusion_oneline"
             };
     
             for (const [param, inputId] of Object.entries(paramsToInputs)) {
-                const textarea = document.getElementById(inputId);
-                const value = urlParams.get(param);
-                if (value !== null) {
-                    textarea.value = decodeURIComponent(value);
-                    // Auto-resize textarea
-                    textarea.style.height = 'auto';
-                    textarea.style.height = textarea.scrollHeight + 'px';
+                try {
+                    const element = document.getElementById(inputId);
+                    const value = urlParams.get(param);
+                    if (value !== null) {
+                        if (element.tagName && element.tagName === 'TEXTAREA') {
+                            element.value = decodeURIComponent(value.replace(/%(?![0-9][0-9a-fA-F]+)/g, '%25'));
+                            // Auto-resize textarea
+                            element.style.height = 'auto';
+                            element.style.height = element.scrollHeight + 'px';
+                        } else {
+                            element.textContent = decodeURIComponent(value.replace(/%(?![0-9][0-9a-fA-F]+)/g, '%25'));
+                        }
+                    }
+                } catch(error) {
+                    console.log(error)
+                    continue
                 }
+                
             }
     
             // Add event listener to dynamically resize on input

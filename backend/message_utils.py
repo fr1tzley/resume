@@ -14,7 +14,8 @@ to get areas for improvement, do the same, except use areas for improvement from
 
 def resume_to_messages(experiences,
         education,
-        skills):
+        skills,
+        certifications):
     messages = [
         {"role": "system", "content": REQUIREMENTS_TASK_MESSAGE},
         {"role": "system", "content": REQUIREMENTS_INSTRUCTIONS_MESSAGE},
@@ -31,7 +32,9 @@ def resume_to_messages(experiences,
     
         
     messages.append({"role": "user", "content": "These are the candidate's skills."})
-    messages.append({"role":"user", "content": skills[0]})
+    messages.append({"role":"user", "content": skills})
+    messages.append({"role": "user", "content": "These are the candidate's certifications."})
+    messages.append({"role":"user", "content": certifications})
 
     return messages 
 

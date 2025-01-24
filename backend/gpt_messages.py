@@ -7,13 +7,15 @@ The user will send messages explaining the applicants' experiences, skills and e
 REQUIREMENTS_INSTRUCTIONS_MESSAGE = """Your instructions are to do the following:
 1.Read through the each requirement pasted into the thread.
 
-2.Reference each ofit against the resume sent at the beginning of the chat.
+2.Reference each requirement against the resume sent at the beginning of the chat.
 
-3.Respond with a "Y" if the resume indicates the candidate meets the requirement, and respond with "N" in ALL other cases.
+3.On a new line, write the requirement you are evaluating.
 
-4.On the next line, respond with a short statement explaining your rationale.
+4.On the next line, respond with a "Y" if the resume indicates the candidate meets the requirement, and respond with "N" in ALL other cases.
 
-5.Repeat the above 2 steps for every requirement that was sent by the user.
+5.On the next line, respond with a short statement explaining your rationale.
+
+6.Repeat the above 2 steps for every requirement that was sent by the user.
 """
 
 INTERVIEW_TASK_MESSAGE = """You are a helpful assistant helping a company recruit new talent. Your task is to read through the results of the interview, and then indicate with a single phrase how well the candidate did on the interview.
@@ -78,69 +80,3 @@ DECISION_INSTRUCTIONS_MESSAGE = """
 4.On the next line, provide a few sentences summarizing the information the user gave you and how it led you to your decision.
 """
 
-
-
-EXPERIENCES = [
-    """
-    HR Manager, Global Enterprises March 2018 – Present
-● Developed and executed HR strategies aligned with business objectives, resulting in a 20% increase in employee retention.
-● Managed end-to-end recruitment processes, successfully filling over 100 positions annually.
-● Addressed employee grievances and implemented conflict resolution strategies, improving workplace satisfaction by 15%.
-● Led performance management initiatives, including annual appraisals and development plans.
-● Ensured compliance with labor laws and company policies, reducing legal disputes by 10%.
-    """,
-    """
-HR Generalist, Tech Solutions Inc. June 2015 – February 2018
-● Assisted in the recruitment and onboarding of new employees, enhancing the onboarding process efficiency by 25%.
-● Managed employee benefits programs, achieving a 95% satisfaction rate among staff.
-● Conducted training sessions on company policies and professional development.
-● Supported performance management processes, including feedback and coaching.
-    """
-]
-
-EDUCATION = [
-    "M.A. in Human Resources Management University of Tokyo, 2013–2015",
-    "B.A. in Business Administration Keio University, 2009–2013"
-]
-
-SKILLS = [
-    """
-    Skills:
-    ● HR Management: Talent Acquisition, Employee Relations, Performance Management
-    ● HR Systems: Workday, ADP, BambooHR
-    ● Legal Compliance: Labor Laws, Employment Regulations
-    ● Communication: Negotiation, Conflict Resolution, Presentation
-    ● Leadership: Team Building, Staff Development, Strategic Planning
-    ● Other: Microsoft Office Suite, Data Analysis
-    """
-]
-
-INTERVIEW_STRENGTHS = [
-    "Extensive experience in HR management, with a focus on talent acquisition and employee relations.",
-    "Proficient in HR systems such as Workday and ADP.",
-    "Strong understanding of labor laws and HR best practices.",
-    "Excellent communication and leadership skills.",
-    "Proven track record in developing and implementing HR strategies that align with business objectives."
-]
-
-INTERVIEW_WEAKNESSES = [
-    "Limited experience with international HR practices; may require additional training for global operations.",
-    "Needs to familiarize with the company's specific HR software and tools."
-]
-
-INTERVIEW_JOB_FIT = """Taro is a strong candidate for the HR Manager position, bringing a wealth of experience in HR management and a solid understanding of HR systems and legal compliance. His skills align well with the requirements of the role, particularly in talent acquisition and employee relations.
-He would be a valuable addition to the team, with a short learning curve to adapt to the company's specific HR tools and international practices.
-"""
-
-REQUIREMENTS = [
-    "Proven working experience as HR Manager or other HR Executive.",
-    "People-oriented and results-driven.",
-    "Demonstrable experience with Human Resources metrics.",
-    "Knowledge of HR systems and databases.",
-    "Ability to architect strategy along with leadership skills.",
-    "Excellent active listening, negotiation, and presentation skills.",
-    "Competence to build and effectively manage interpersonal relationships at all levels of the company.",
-    "In-depth knowledge of labor law and HR best practices.",
-    "Degree in Human Resources or related field."
-    
-]
