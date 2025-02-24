@@ -6,6 +6,7 @@ import jwt
 import secrets
 from datetime import datetime, timedelta
 from base64 import urlsafe_b64encode
+from functools import wraps
 
 load_dotenv()
 APP_URL = os.getenv("APP_URL")
@@ -16,6 +17,8 @@ def validate_email(email):
     import re
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
+
+
 
 def validate_password(password):
     """Ensure password meets security requirements"""
@@ -65,6 +68,8 @@ def generate_access_token(user_id,app):
         app.config['SECRET_KEY'],
         algorithm='HS256'
     )
+
+
 
 if __name__ == "__main__":
     print(validate_password("nnnathan"))

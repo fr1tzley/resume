@@ -14,8 +14,10 @@ from flask_mail import Mail
 import os
 from flask_cors import CORS, cross_origin
 
+import wraps
 
-from gpt import get_gpt_results
+
+from backend.gpt_messaging.gpt import get_gpt_results
 from text_extraction import extract_interview_notes, extract_job_description, extract_resume_info
 from utils.login_utils import send_verification_email, validate_email, validate_password
 
@@ -76,6 +78,32 @@ def generate_verification_token(length=32):
     token = urlsafe_b64encode(random_bytes).decode('utf-8').rstrip('=')
     
     return token
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        
+        if not token:
+            return jsonify({'error': 'No token provided'}), 401
+            
+        try:
+            # Remove 'Bearer ' prefix if present
+            if token.startswith('Bearer '):
+                token = token[7:]
+                
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+            
+            if not current_user:
+                raise Exception('User not found')
+                
+            return f(current_user, *args, **kwargs)
+            
+        except Exception as e:
+            return jsonify({'error': 'Invalid token'}), 401
+            
+    return decorated
 
 def generate_access_token(user_id):
     """Generate a JWT token for the user"""
@@ -148,6 +176,7 @@ def verify_email(token):
     pass
 
 @app.route('/upload', methods=['POST'])
+@require_auth
 def upload_files():
     required_files = ['job_description', 'resume', 'interview_notes']
     missing_files = [file for file in required_files if file not in request.files]
