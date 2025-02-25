@@ -222,7 +222,7 @@ def verify_email():
 
 
 @app.route('/upload', methods=['POST'])
-@require_auth
+#@require_auth
 def upload_files():
     required_files = ['job_description', 'resume', 'interview_notes']
     missing_files = [file for file in required_files if file not in request.files]
@@ -244,22 +244,32 @@ def upload_files():
 
     strengths, areas_of_improvement, job_fit = extract_interview_notes(saved_files["interview_notes"])
     requirements, responsibilities = extract_job_description(saved_files["job_description"]) 
-    resume_info = extract_resume_info(saved_files["resume"])
-    """
-    return jsonify({
-        "satisfied_requirements": "b",
-        "unsatisfied_requirements": "c",
-        "interview_fit": "d",
-        "strengths": "e",
-        "areas_of_improvement": "f",
-        "overall_conclusion": "g",
-        "strengths_count": "1",
-        "areas_of_improvement_count": "2",
-        "satisfied_requirements_count": "3",
-        "unsatisfied_requirements_count": "4"
+    employment_history, educational_history, skills, certifications = extract_resume_info(saved_files["resume"])
 
+    return jsonify({
+        "requirements": requirements,
+        "responsibilities": responsibilities,
+        "employment_history": employment_history,
+        "educational_history": educational_history,
+        "skills": skills,
+        "certifications": certifications,
+        "strengths": strengths,
+        "areas_of_improvement": areas_of_improvement,
+        "job_fit": job_fit
     }), 200
-    """
+    
+
+@app.route('/analyze', methods=['POST'])
+@require_auth
+def analyze_response():
+    data = request.get_json()
+    resume_info = data["resume_info"]
+    strengths = data["strengths"]
+    areas_of_improvement = data["areas_of_improvement"]
+    job_fit = data["job_fit"]
+    requirements = data["requirements"]
+    responsibilities = data["responsibilities"]
+
     gpt_results = get_gpt_results(resume_info, (strengths, areas_of_improvement, job_fit), requirements, responsibilities)
     return jsonify(gpt_results), 200
 

@@ -1,42 +1,67 @@
-import React, { useState } from 'react';
+const { useState, useImperativeHandle, forwardRef, useRef } = React;
 
-function BulletList() {
+const BulletList = forwardRef((props, ref) => {
+    // Initialize with a default empty bullet point
     const [bulletPoints, setBulletPoints] = useState(['']);
 
+    // Define component methods
     const addBulletPoint = () => {
-        setBulletPoints([...bulletPoints, '']);
+        console.log("Adding bullet point");
+        // Make sure we're properly updating the state array
+        setBulletPoints(prevPoints => [...prevPoints, '']);
     };
 
     const removeBulletPoint = (index) => {
-        const newBulletPoints = bulletPoints.filter((_, i) => i !== index);
-        setBulletPoints(newBulletPoints);
+        console.log("Removing bullet point at index", index);
+        // Use the functional form of setState to ensure we're using the latest state
+        setBulletPoints(prevPoints => prevPoints.filter((_, i) => i !== index));
     };
 
     const updateBulletPoint = (index, value) => {
-        const newBulletPoints = [...bulletPoints];
-        newBulletPoints[index] = value;
-        setBulletPoints(newBulletPoints);
+        console.log("Updating bullet point at index", index, "with value", value);
+        // Use the functional form of setState
+        setBulletPoints(prevPoints => {
+            const newPoints = [...prevPoints];
+            newPoints[index] = value;
+            return newPoints;
+        });
     };
 
+    // Get the current bullet points
+    const getBulletPoints = () => {
+        console.log("Getting bullet points:", bulletPoints);
+        return bulletPoints;
+    };
+
+    // Expose methods via useImperativeHandle
+    useImperativeHandle(ref, () => ({
+        addBulletPoint,
+        removeBulletPoint,
+        updateBulletPoint,
+        getBulletPoints
+    }));
+
+    // Log when the component renders
+    console.log("Rendering BulletList with points:", bulletPoints);
+
     return (
-        <div className="bullet-list p-4">
-            <div className="bullet-items space-y-2">
+        <div className="bullet-list">
+            <div className="bullet-items">
                 {bulletPoints.map((bullet, index) => (
-                    <div key={index} className="bullet-item flex items-center gap-2">
-                        <span className="bullet text-xl">•</span>
+                    <div key={index} className="bullet-item">
+                        <span className="bullet">•</span>
                         <input
                             type="text"
                             value={bullet}
                             onChange={(e) => updateBulletPoint(index, e.target.value)}
                             placeholder="Enter text here..."
-                            className="flex-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {bulletPoints.length > 1 && (
                             <button
                                 onClick={() => removeBulletPoint(index)}
-                                className="delete-btn p-1 text-gray-500 hover:text-red-500 transition-colors"
-                                aria-label="Delete bullet point"
+                                className="remove-btn"
                             >
+                                ×
                             </button>
                         )}
                     </div>
@@ -44,10 +69,10 @@ function BulletList() {
             </div>
             <button 
                 onClick={addBulletPoint}
-                className="add-btn mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                className="add-btn"
             >
                 Add Bullet Point
             </button>
         </div>
     );
-}
+});

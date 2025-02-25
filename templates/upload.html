@@ -27,20 +27,105 @@
                 <label for="interview-notes">Interview Notes (PDF/DOCX):</label>
                 <input type="file" id="interview-notes" name="interview_notes" accept=".pdf, .docx" required>
             </div>
-            <button type="button" id="submit-button" onclick="submitForm()">Submit</button>
+            <button type="button" id="submit-button" onclick="submitFiles()">Submit Files</button>
         </form>
 
         <button type="button" class="collapsible">Job Description</button>
         <div class="content">
             <div>Responsibilities</div>
-            <div id="responsibilities-list"></div>
+            <div id="responsibilities"></div>
             <div>Requirements</div>
-            <div id="requirements-list"></div>
+            <div id="requirements"></div>
+        </div>
+        <div style="height: 5px;"></div>
+        <button type="button" class="collapsible">Resume Information</button>
+        <div class="content">
+            <div>Employment History</div>
+            <textarea id="employment_history" rows="8" cols="50"></textarea>
+            <div>Educational History</div>
+            <textarea id="educational_history" rows="8" cols="50"></textarea>
+            <div>Skills</div>
+            <textarea id="skills" rows="8" cols="50"></textarea>
+            <div>Certifications</div>
+            <textarea id="certifications" rows="8" cols="50"></textarea>
+        </div>
+        
+        <div style="height: 5px;"></div>
+        <button type="button" class="collapsible">Interview Notes</button>
+        <div class="content">
+            <div>Strengths</div>
+            <div id="strengths"></div>
+            <div>Areas of Improvement</div>
+            <div id="areas_of_improvement"></div>
+            <div>Job Fit</div>
+            <textarea id="job_fit" rows="8" cols="50"></textarea>
         </div>
         <div id="spinner" style="display: none; margin-top: 20px;">
             <p>Loading...</p>
         </div>
     </div>
+
+    <script type="text/babel" src="{{ url_for('static', filename='js/bulletlist.js') }}"></script>
+    <script type="text/babel">
+        const bulletListRefs = {
+        responsibilities: null,
+        requirements: null,
+        strengths: null,
+        areasOfImprovement: null
+        };
+
+    // Setup all bullet list components with refs
+    const setupBulletLists = () => {
+        // Create refs for each list
+        bulletListRefs.responsibilities = React.createRef();
+        bulletListRefs.requirements = React.createRef();
+        bulletListRefs.strengths = React.createRef();
+        bulletListRefs.areasOfImprovement = React.createRef();
+        
+        // Render each component with its ref
+        const responsibilitiesRoot = ReactDOM.createRoot(document.getElementById('responsibilities'));
+        const requirementsRoot = ReactDOM.createRoot(document.getElementById('requirements'));
+        const strengthsRoot = ReactDOM.createRoot(document.getElementById('strengths'));
+        const aopsRoot = ReactDOM.createRoot(document.getElementById('areas_of_improvement'));
+
+        responsibilitiesRoot.render(<BulletList ref={bulletListRefs.responsibilities} />);
+        requirementsRoot.render(<BulletList ref={bulletListRefs.requirements} />);
+        strengthsRoot.render(<BulletList ref={bulletListRefs.strengths} />);
+        aopsRoot.render(<BulletList ref={bulletListRefs.areasOfImprovement} />);
+    };
+
+    // Call this function after your DOM is loaded
+    setupBulletLists();
+
+    // Example helper functions for common operations
+    const BulletListManager = {
+        // Add a bullet point to a specific list
+        addBulletPoint: function(listName) {
+        if (bulletListRefs[listName] && bulletListRefs[listName].current) {
+            bulletListRefs[listName].current.addBulletPoint();
+        }
+        },
+        updateBulletPoint: function(listName,index,value) {
+        if (bulletListRefs[listName] && bulletListRefs[listName].current) {
+            bulletListRefs[listName].current.updateBulletPoint(index,value);
+        }
+        },
+        // Get bullet points from a specific list
+        getBulletPoints: function(listName) {
+            if (bulletListRefs[listName] && bulletListRefs[listName].current) {
+                return bulletListRefs[listName].current.getBulletPoints();
+            }
+            return [];
+        },
+        
+        // Remove a bullet point from a specific list
+        removeBulletPoint: function(listName, index) {
+            if (bulletListRefs[listName] && bulletListRefs[listName].current) {
+                bulletListRefs[listName].current.removeBulletPoint(index);
+            }
+        }
+    };
+    </script>
 
     <script>
         var coll = document.getElementsByClassName("collapsible");
@@ -58,7 +143,73 @@
             });
         }
 
-        async function submitForm() {
+        async function submitFiles() {
+            const form = document.getElementById('fileUploadForm');
+            const submitButton = document.getElementById("submit-button")
+            const formData = new FormData(form);
+
+            const spinner = document.getElementById('spinner');
+    
+            spinner.style.display = 'block';
+            submitButton.disabled = true
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                textAreaContents= [
+                    "employment_history",
+                    "educational_history",
+                    "skills",
+                    "certifications",
+                    "job_fit"
+                ]
+
+                for(let i = 0; i < textAreaContents.length; i++){
+                    currentId = textAreaContents[i]
+                    currentElement = document.getElementById(currentId)
+                    if (data[currentId] !== "") {
+                        currentElement.value = data[currentId]
+                    }      
+                }
+
+                bulletListContents = [
+                    "requirements",
+                    "responsibilities",
+                    "strengths",
+                    "areas_of_improvement"
+                ]
+
+                for(let i = 0; i < bulletListContents.length; i++){
+                    currentId = bulletListContents[i]
+                    currentBulletList = document.getElementById(currentId)
+                    currentDataList = data[currentId]
+                    for(let j = 1; j < currentDataList.length; j++) {
+                        if (j !== 1) {
+                            BulletListManager.addBulletPoint(currentId)
+                        }
+                        BulletListManager.updateBulletPoint(currentId, j, currentDataList[j])
+                        
+                    }   
+                    console.log(BulletListManager.getBulletPoints(currentId))  
+                }
+                
+                spinner.style.display = 'none';
+                submitButton.disabled=false
+                    
+            } catch (error) {
+                spinner.style.display = 'none';
+                submitButton.disabled=false
+                alert('An error occurred while uploading the files. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+
+        async function getGptResponse() {
             const form = document.getElementById('fileUploadForm');
             const submitButton = document.getElementById("submit-button")
             const formData = new FormData(form);
@@ -93,16 +244,6 @@
             }
         }
     </script>
-    <script type="text/babel" src="{{ url_for('static', filename='js/bulletlist.js') }}"></script>
-    <script type="text/babel">
-        
-        // Create root containers for both lists
-        const responsibilitiesRoot = ReactDOM.createRoot(document.getElementById('responsibilities-list'));
-        const requirementsRoot = ReactDOM.createRoot(document.getElementById('requirements-list'));
-
-        // Render separate BulletList components in each container
-        responsibilitiesRoot.render(<BulletList />);
-        requirementsRoot.render(<BulletList />);
-    </script>
+    
 </body>
 </html>
