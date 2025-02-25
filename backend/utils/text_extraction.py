@@ -11,7 +11,7 @@ from pypdf import PdfReader
 import spacy
 from spacy.matcher import Matcher
 import os
-
+import re
 
 nlp = spacy.load('en_core_web_sm')
 matcher = Matcher(nlp.vocab)
@@ -62,7 +62,7 @@ def extract_interview_notes(filepath):
             rest, areas_of_improvement = rest.split(" \nAreas  for  Improvement:  \n")
             _, strengths = rest.split(" \nCandidate's  Strengths:  \n")
 
-            return strengths.split("●"), areas_of_improvement.split("●"), job_fit
+            return strengths.split("●"), areas_of_improvement.split("●"), re.sub("\n", "", job_fit)
         except Exception as e:
             raise Exception("Error encountered while unpacking interview notes. Maybe check your formatting?")
        

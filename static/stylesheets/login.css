@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.form-container {
+    background: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #555;
+    display:flex;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    font-size: 14px;
+    border: 3px solid grey;
+    border-radius: 4px;
+    display:flex;
+}
+
+input[type="password"] {
+    width: 100%;
+    padding: 5px;
+    font-size: 14px;
+    border: 3px solid grey;
+    border-radius: 4px;
+    display:flex;
+}
+
+button {
+    background-color: #4285f4;
+    color: #ddd;
+    font-size: 16px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.form-button {
+    background-color: #4285f4;
+    color:white;
+}
+
+#form-button:hover {
+    background-color: #357ae8;
+    color:white;
+}
+
+
+button:hover {
+    background-color: #357ae8;
+}
+
+.error-bar{
+    display:none;
+    background-color:pink;
+    color: red;
+    font-size: 16px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.info-bar{
+    display:none;
+    background-color:lightblue;
+    color: blue;
+    font-size: 16px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+}

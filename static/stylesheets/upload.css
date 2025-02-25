@@ -95,7 +95,8 @@ input[type="file"] {
 
 button {
     background-color: #4285f4;
-    color: #4285f4;
+    display: block;
+    color: #ddd;
     font-size: 16px;
     padding: 10px 15px;
     border: none;
@@ -104,6 +105,16 @@ button {
     width: 100%;
     margin-top: 15px;
 }
+
+#submit-button {
+    background-color: #4285f4;
+    color:white;
+}
+
+#submit-button:hover {
+    background-color: #357ae8;
+}
+
 
 button:hover {
     background-color: #357ae8;

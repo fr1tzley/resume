@@ -1,0 +1,165 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/login.css') }}">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login or Register</title>
+    <style>
+        /* Additional styles for side-by-side buttons */
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .button-container .form-button {
+            flex: 1;
+            margin-top: 0;
+        }
+    </style>
+</head> 
+<body>
+    <div class="form-container">
+        <div class="button-container">
+            <button class="form-button" id="display-login-button" onclick="switchToLogin()">Login</button>
+            <button class="form-button" id="display-register-button" style="color:black; background-color:transparent;" onclick="switchToRegister()">Register</button>
+        </div>
+        <div id="error-bar" class="error-bar"></div>
+        <div id="info-bar" class="info-bar"></div>
+        <form id="loginForm" enctype="multipart/form-data">
+            <div>
+                <label for="login-email">Email:</label>
+                <input type="text" id="login-email" name="login-email" required>
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" name="login-password" required>
+                <br>
+                <button type="button" class="form-button" id="login-button" onclick="login()">Login</button>
+            </div>
+        </form>
+
+        <form id="registerForm" enctype="multipart/form-data" style="display:none">
+            <div>
+                <label for="register-email">Email:</label>
+                <input type="text" id="register-email" name="register-email" required>
+                <label for="register-password">Password:</label>
+                <input type="password" id="register-password" name="reigster-password required">
+                <label for="register-confirm-password">Confirm Password:</label>
+                <input type="password" id="register-confirm-password" name="reigster-confirm-password">
+                <br>
+                <button type="button" class="form-button" id="register-button" onclick="register()">Register</button>
+            </div>
+        </form>
+    </div>
+    <script type="text/babel" src="{{ url_for('static', filename='js/errorInfoUtils.js') }}"></script>
+
+    <script>
+
+        function switchToLogin() {
+            switchForms("register", "login")
+        }
+
+        function switchToRegister() {
+            switchForms("login", "register")
+        }
+        function switchForms(switchFrom, switchTo) {
+            hideErrorInfo()
+            document.getElementById(switchFrom+"Form").style.display = "none"
+            document.getElementById(switchTo+"Form").style.display = "block"
+
+            fromButton = document.getElementById("display-" + switchFrom + "-button")
+            toButton = document.getElementById("display-" + switchTo + "-button")
+
+            fromButton.style.color = "black";
+            fromButton.style.backgroundColor = "transparent";
+
+            toButton.style.color = "white";
+            toButton.style.backgroundColor = "#4285f4";
+        }
+
+        async function login() {
+            hideErrorInfo()
+
+            email = document.getElementById("login-email").value
+            password = document.getElementById("login-password").value
+
+            if (password === "" || email === "" ) {
+                showBarWithMsg("error-bar", "Please fill in all the elements of the form.")
+                return
+            }
+            formData = {
+                email: email,
+                password: password
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                showBarWithMsg("info-bar", data["token"])
+
+
+            } catch (error) {
+                alert('An error occurred while logging in. Please try again.');
+                console.error('Error:', error);
+                showBarWithMsg("error-bar", error)
+            }
+        }
+
+        async function register() {
+            hideErrorInfo()
+
+            email = document.getElementById("register-email").value
+            password = document.getElementById("register-password").value
+            confirmPassword = document.getElementById("register-confirm-password").value
+            
+            
+            if (password === "" || email === "" || confirmPassword === "") {
+                showBarWithMsg("error-bar", "Please fill in all the elements of the form.")
+                return
+            }
+            if (password !== confirmPassword) {
+                showBarWithMsg("error-bar", "Your passwords do not match.")
+                return
+            }
+
+            formData = {
+                email: email,
+                password: password
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                showBarWithMsg("info-bar","Please check your email to verify your account.")
+
+
+            } catch (error) {
+                alert('An error occurred while registering. Please try again.');
+                console.error('Error:', error);
+                showBarWithMsg("error-bar", error)
+            }
+        }
+
+    </script>
+</body> 
+
+</html>

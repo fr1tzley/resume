@@ -39,6 +39,7 @@ pg_username = os.getenv("POSTGRES_USERNAME")
 pg_password = os.getenv("POSTGRES_PASSWORD")
 pg_db = os.getenv("POSTGRES_DB")
 pg_port = os.getenv("POSTGRES_PORT")
+DEV_MODE = True
 postgres_connection_string = f"postgresql://{pg_username}:{pg_password}@localhost:{pg_port}/{pg_db}"
 
 
@@ -50,7 +51,8 @@ app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_USE_TLS"] = True
 app.config["SQLALCHEMY_DATABASE_URI"] = postgres_connection_string
-
+if DEV_MODE:
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 mail = Mail(app)
 db = SQLAlchemy(app)
@@ -88,6 +90,10 @@ def landing():
 @app.route('/upload')
 def upload():
     return render_template('upload.html')
+
+@app.route('/loginpage')
+def loginpage():
+    return render_template('login.html')
 
 
 def generate_verification_token(length=32):
@@ -163,7 +169,6 @@ def register():
         return jsonify({'error': password_message}), 401
     
     token = generate_verification_token()
-    #TODO this doesnt actually work
     
     user = User(email=data['email'])
     user.set_password(data['password'])
