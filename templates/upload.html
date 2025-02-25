@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/upload.css') }}">
+</head>
+<body>
+    <div class="form-container">
+        <h1>Upload Your Files</h1>
+        <form id="fileUploadForm" enctype="multipart/form-data">
+            <div class="file-input">
+                <label for="resume">Resume (PDF/DOCX):</label>
+                <input type="file" id="resume" name="resume" accept=".pdf, .docx" required>
+            </div>
+            <div class="file-input">
+                <label for="job-description">Job Description (PDF/DOCX):</label>
+                <input type="file" id="job-description" name="job_description" accept=".pdf, .docx" required>
+            </div>
+            <div class="file-input">
+                <label for="interview-notes">Interview Notes (PDF/DOCX):</label>
+                <input type="file" id="interview-notes" name="interview_notes" accept=".pdf, .docx" required>
+            </div>
+            <button type="button" id="submit-button" onclick="submitForm()">Submit</button>
+        </form>
+
+        <button type="button" class="collapsible">Job Description</button>
+        <div class="content">
+            <div>Responsibilities</div>
+            <div id="responsibilities-list"></div>
+            <div>Requirements</div>
+            <div id="requirements-list"></div>
+        </div>
+        <div id="spinner" style="display: none; margin-top: 20px;">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        var i;
+
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.display === "block") {
+                    content.style.display = "none";
+                } else {
+                    content.style.display = "block";
+                }
+            });
+        }
+
+        async function submitForm() {
+            const form = document.getElementById('fileUploadForm');
+            const submitButton = document.getElementById("submit-button")
+            const formData = new FormData(form);
+
+            const spinner = document.getElementById('spinner');
+    
+            spinner.style.display = 'block';
+            submitButton.disabled = true
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                spinner.style.display = 'none';
+                submitButton.disabled=false
+
+                // Redirect to response.html with query parameters
+                const url = new URL('./response.html', window.location.href);
+                for (const key in data) {
+                    url.searchParams.append(key, data[key]);
+                }
+                window.location.href = url;
+            } catch (error) {
+                spinner.style.display = 'none';
+                submitButton.disabled=false
+                alert('An error occurred while uploading the files. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+    <script type="text/babel" src="{{ url_for('static', filename='js/bulletlist.js') }}"></script>
+    <script type="text/babel">
+        
+        // Create root containers for both lists
+        const responsibilitiesRoot = ReactDOM.createRoot(document.getElementById('responsibilities-list'));
+        const requirementsRoot = ReactDOM.createRoot(document.getElementById('requirements-list'));
+
+        // Render separate BulletList components in each container
+        responsibilitiesRoot.render(<BulletList />);
+        requirementsRoot.render(<BulletList />);
+    </script>
+</body>
+</html>

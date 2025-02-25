@@ -8,6 +8,10 @@ from datetime import datetime, timedelta
 from base64 import urlsafe_b64encode
 from functools import wraps
 
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
 load_dotenv()
 APP_URL = os.getenv("APP_URL")
 SENDER_EMAIL = os.getenv("MAIL_DEFAULT_SENDER")
@@ -57,6 +61,22 @@ def send_verification_email(email, token, mail):
     msg.body = f"Please click the following link to verify your email: {verification_url}"
 
     mail.send(msg)
+
+def send_verification_email_sendgrid(email,token):
+    verification_url = f"{APP_URL}verify-email?token={token}"
+    message = Mail(
+    from_email=SENDER_EMAIL,
+    to_emails=email,
+    subject="DocuScan-Verify your Email",
+    html_content=f'Please click the following link to verify your email:{verification_url}')
+    try:
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
 
 def generate_access_token(user_id,app):
     """Generate a JWT token for the user"""

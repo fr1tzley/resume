@@ -13,18 +13,26 @@ from dotenv import load_dotenv
 from flask_mail import Mail
 import os
 from flask_cors import CORS, cross_origin
+import logging
 
-import wraps
-
+from functools import wraps
 
 from backend.gpt_messaging.gpt import get_gpt_results
-from text_extraction import extract_interview_notes, extract_job_description, extract_resume_info
-from utils.login_utils import send_verification_email, validate_email, validate_password
+from backend.utils.text_extraction import extract_interview_notes, extract_job_description, extract_resume_info
+from backend.utils.login_utils import send_verification_email, send_verification_email_sendgrid, validate_email, validate_password
 
 load_dotenv()
 app = Flask(__name__)
 
 CORS(app)
+
+"""
+logging.basicConfig(
+    filename='auth.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+"""
 
 UPLOAD_FOLDER =  os.getenv("UPLOAD_FOLDER")
 pg_username = os.getenv("POSTGRES_USERNAME")
@@ -73,6 +81,15 @@ with app.app_context():
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@app.route('/index')
+def landing():
+    return render_template('index.html')
+
+@app.route('/upload')
+def upload():
+    return render_template('upload.html')
+
+
 def generate_verification_token(length=32):
     random_bytes = secrets.token_bytes(length)
     token = urlsafe_b64encode(random_bytes).decode('utf-8').rstrip('=')
@@ -97,6 +114,8 @@ def require_auth(f):
             
             if not current_user:
                 raise Exception('User not found')
+            if current_user.token_expiry > datetime.now():
+                raise Exception('Token expired')
                 
             return f(current_user, *args, **kwargs)
             
@@ -110,7 +129,7 @@ def generate_access_token(user_id):
     return jwt.encode(
         {
             'user_id': user_id,
-            'exp': datetime.utcnow() + timedelta(hours=24)
+            'exp': datetime.now() + timedelta(hours=24)
         },
         app.config['SECRET_KEY'],
         algorithm='HS256'
@@ -132,6 +151,12 @@ def register():
 
     if not validate_email(email):
         return jsonify({'error': 'Invalid email. Please try again.'}), 401
+    
+
+    user = User.query.filter_by(email=email).first()
+    if user and user.email_verified:
+        logging.info(f"Failed registration attempt for email: {data.get('email')} due to email already in use")
+        return jsonify({'error': 'This email is already in use. Please try again.'}), 401
 
     password_message = validate_password(password)
     if password_message != "":
@@ -148,7 +173,9 @@ def register():
     try:
         db.session.add(user)
         db.session.commit()
-        #send_verification_email(email, token, mail)
+        send_verification_email_sendgrid(email, token)
+        
+        logging.info(f"Sent login token to: {data.get('email')}")
         return jsonify({'message': 'Please check your email to verify your account'}), 201
 
     except Exception as e:
@@ -162,18 +189,37 @@ def login():
     user = User.query.filter_by(email=data.get("email")).first()
 
     if not user or not user.check_password(data.get("password")):
+        if not user:
+            logging.warning(f"Failed login attempt for email: {data.get('email')} due to invalid email")
+        else:
+            logging.warning(f"Failed login attempt for email: {data.get('email')} due to invalid password")
         return jsonify({"error": "Invalid email or password."}), 401
     
     if not user.email_verified:
         return jsonify({"error": "Please verify your email."}), 401
     
     access_token = generate_access_token(user.id)
+    logging.info(f"Sucecssful login attempt for email: {data.get('email')}")
     return jsonify({"access_token": access_token}), 200
 
-@app.route("/verify-email")
-def verify_email(token):
-    #TODO fill this in
-    pass
+@app.route("/verify-email", methods=["POST"])
+def verify_email():
+    token = request.args.get("token")
+    user = User.query.filter_by(verification_token=token).first()
+    
+    if not user or user.token_expiry > datetime.now():
+        if not user:
+            return jsonify({"error": "Verification failed, invalid token"}), 401
+        else:
+            return jsonify({"error": "Verification failed, token expired"}), 401
+    
+    user.email_verified = True
+    user.verification_token = None
+    user.token_expiry = None
+    db.session.commit()
+    
+    return ({"Success"}), 200
+
 
 @app.route('/upload', methods=['POST'])
 @require_auth

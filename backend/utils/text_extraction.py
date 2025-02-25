@@ -9,7 +9,6 @@ we can guide the AI through a chain of reasoning, using the job description and 
 
 from pypdf import PdfReader
 import spacy
-from nlp_patterns import SINGLE_BULLET, JOB_PATTERN_2, WORD_COMMA_WORD, DATE_RANGE_ENDING_WITH_PRESENT, DATE_RANGE_ENDING_WITH_YEAR
 from spacy.matcher import Matcher
 import os
 
