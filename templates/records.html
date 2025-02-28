@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previous Analysis Records</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/upload.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/error-info.css') }}">
+</head>
+<body>
+    <div id="header-container"></div>
+    <div class="form-container">
+        Lorem Impsum 
+    </div>
+    <script type="text/babel">
+        window.addEventListener('load', () => {
+       if (ReactDOM && window.DashboardHeader) {
+       const headerRoot = ReactDOM.createRoot(document.getElementById('header-container'));
+       headerRoot.render(React.createElement(window.DashboardHeader, { initialActiveButton: 'previous' }));
+    } else {
+       console.error('React or DashboardHeader component not loaded properly');
+       }
+   });
+   </script>
+    <script type="text/babel" src="{{ url_for('static', filename='js/header.js') }}"></script>
+</body>
+</html>

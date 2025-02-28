@@ -5,6 +5,8 @@ from time import sleep
 from flask import Flask, request, render_template, redirect, session, jsonify
 from flask_login import LoginManager, UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import DeclarativeBase
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_limiter import Limiter
@@ -61,7 +63,8 @@ limiter = Limiter(
     key_func=get_remote_address,
     app=app
 )
-
+class Base(DeclarativeBase):
+    pass
 class User(UserMixin, db.Model):
     __tablename__ = "appuser"
     id = db.Column(db.Integer, primary_key=True)
@@ -77,7 +80,30 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+class GptAnalysis(db.Model):
+    __tablename__ = "gptanalysis"
     
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("appuser.id"), nullable=False)
+    
+    # Text fields that could be long
+    satisfied_requirements = db.Column(db.JSON, nullable=True)
+    unsatisfied_requirements = db.Column(db.JSON, nullable=True)
+    interview_fit = db.Column(db.Text, nullable=True)
+    strengths = db.Column(db.Text, nullable=True)
+    areas_of_improvement = db.Column(db.Text, nullable=True)
+    conclusion_oneline = db.Column(db.String(255), nullable=True)
+    overall_conclusion = db.Column(db.Text, nullable=True)
+    
+    # Count fields
+    strengths_count = db.Column(db.Integer, default=0)
+    areas_of_improvement_count = db.Column(db.Integer, default=0)
+    satisfied_requirements_count = db.Column(db.Integer, default=0)
+    unsatisfied_requirements_count = db.Column(db.Integer, default=0)
+    
+    # Timestamp
+    created_at = db.Column(db.DateTime, default=datetime.now())
 with app.app_context():
     db.create_all()
 
@@ -91,10 +117,17 @@ def landing():
 def upload():
     return render_template('upload.html')
 
+@app.route('/response')
+def response():
+    return render_template('response.html')
+
 @app.route('/loginpage')
 def loginpage():
     return render_template('login.html')
 
+@app.route('/records')
+def records():
+    return render_template('records.html')
 
 def generate_verification_token(length=32):
     random_bytes = secrets.token_bytes(length)
@@ -120,7 +153,7 @@ def require_auth(f):
             
             if not current_user:
                 raise Exception('User not found')
-            if current_user.token_expiry > datetime.now():
+            if current_user.token_expiry < datetime.now():
                 raise Exception('Token expired')
                 
             return f(current_user, *args, **kwargs)
@@ -160,7 +193,7 @@ def register():
     
 
     user = User.query.filter_by(email=email).first()
-    if user and user.email_verified:
+    if user and user.email_verified and not data.get("test"):
         logging.info(f"Failed registration attempt for email: {data.get('email')} due to email already in use")
         return jsonify({'error': 'This email is already in use. Please try again.'}), 401
 
@@ -176,8 +209,9 @@ def register():
     user.verification_token = token
     user.token_expiry = datetime.now() + timedelta(hours=24)
     try:
-        db.session.add(user)
-        db.session.commit()
+        if not data["test"]:
+            db.session.add(user)
+            db.session.commit()
         send_verification_email_sendgrid(email, token)
         
         logging.info(f"Sent login token to: {data.get('email')}")
@@ -185,6 +219,7 @@ def register():
 
     except Exception as e:
         db.session.rollback()
+        print(e)
         return jsonify({'error': 'An error occurred during registration'}), 500
 
 @app.route("/login", methods=["POST"])
@@ -204,8 +239,9 @@ def login():
         return jsonify({"error": "Please verify your email."}), 401
     
     access_token = generate_access_token(user.id)
+    user.token_expiry = datetime.now() + timedelta(hours=24)
     logging.info(f"Sucecssful login attempt for email: {data.get('email')}")
-    return jsonify({"access_token": access_token}), 200
+    return jsonify({"access_token": access_token, "user_id":user.id}), 200
 
 @app.route("/verify-email", methods=["POST"])
 def verify_email():
@@ -227,7 +263,7 @@ def verify_email():
 
 
 @app.route('/upload', methods=['POST'])
-#@require_auth
+## TODO make this actually work@require_auth
 def upload_files():
     required_files = ['job_description', 'resume', 'interview_notes']
     missing_files = [file for file in required_files if file not in request.files]
@@ -265,18 +301,60 @@ def upload_files():
     
 
 @app.route('/analyze', methods=['POST'])
-@require_auth
+#@require_auth
 def analyze_response():
-    data = request.get_json()
-    resume_info = data["resume_info"]
-    strengths = data["strengths"]
-    areas_of_improvement = data["areas_of_improvement"]
-    job_fit = data["job_fit"]
-    requirements = data["requirements"]
-    responsibilities = data["responsibilities"]
+    token = request.headers.get('Authorization')
+    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    current_user_id = data['user_id']
+    try:
+        data = request.get_json()
+        employment_history = data["employment_history"]
+        educational_history = data["educational_history"]
+        certifications = data["certifications"]
+        skills = data["skills"]
+        strengths = data["strengths"]
+        areas_of_improvement = data["areas_of_improvement"]
+        job_fit = data["job_fit"]
+        requirements = data["requirements"]
+        responsibilities = data["responsibilities"]
 
-    gpt_results = get_gpt_results(resume_info, (strengths, areas_of_improvement, job_fit), requirements, responsibilities)
-    return jsonify(gpt_results), 200
+        gpt_results = get_gpt_results((employment_history,educational_history,certifications,skills), (strengths, areas_of_improvement, job_fit), requirements, responsibilities)
+        analysis = GptAnalysis(
+            user_id=current_user_id,
+            satisfied_requirements=gpt_results.get('satisfied_requirements', 'None'),
+            unsatisfied_requirements=gpt_results.get('unsatisfied_requirements', 'None'),
+            interview_fit=gpt_results.get('interview_fit', ''),
+            strengths=gpt_results.get('strengths', ''),
+            areas_of_improvement=gpt_results.get('areas_of_improvement', ''),
+            conclusion_oneline=gpt_results.get('conclusion_oneline', ''),
+            overall_conclusion=gpt_results.get('overall_conclusion', ''),
+            strengths_count=gpt_results.get('strengths_count', 0),
+            areas_of_improvement_count=gpt_results.get('areas_of_improvement_count', 0),
+            satisfied_requirements_count=gpt_results.get('satisfied_requirements_count', 0),
+            unsatisfied_requirements_count=gpt_results.get('unsatisfied_requirements_count', 0),
+            created_at=datetime.now()
+        )
+
+        db.session.add(analysis)
+        db.session.commit()
+        return jsonify(gpt_results), 200
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        return jsonify({"error":"An error occurred during processing"}), 401
+
+@app.route('/get_records', methods=["GET"])
+def get_records():
+    token = request.headers.get('Authorization')
+    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    current_user_id = data['user_id']
+    current_user = User.query.filter_by(id=current_user_id).first()
+
+    if not current_user:
+        return {"error": "User not found"}, 404
+    past_analyses = GptAnalysis.query.filter_by(user_id = current_user_id).all()
+
+    return jsonify(past_analyses), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

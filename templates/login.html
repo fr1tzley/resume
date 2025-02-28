@@ -107,7 +107,20 @@
                 });
 
                 const data = await response.json();
-                showBarWithMsg("info-bar", data["token"])
+
+                if (response.status !== 200) {
+                    throw Error(data["error"])
+                }
+
+                
+                const token = data["access_token"];
+    
+                localStorage.setItem('authToken', token); 
+
+               
+                showBarWithMsg("info-bar", "Login successful!");
+                
+                window.location.href = "/upload";
 
 
             } catch (error) {

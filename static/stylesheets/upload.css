@@ -52,7 +52,7 @@ body {
     background-color: #f9f9f9;
     margin: 0;
     padding: 0;
-    display: flex;
+    display: grid;
     justify-content: center;
     align-items: center;
     height: 100%;
@@ -118,6 +118,11 @@ button {
 
 button:hover {
     background-color: #357ae8;
+}
+
+.form-button {
+    background-color: #4285f4;
+    color:white;
 }
 
 .collapsible {

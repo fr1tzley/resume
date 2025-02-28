@@ -1,0 +1,25 @@
+.error-bar{
+    display:none;
+    background-color:pink;
+    color: red;
+    font-size: 16px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.info-bar{
+    display:none;
+    background-color:lightblue;
+    color: blue;
+    font-size: 16px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+}
