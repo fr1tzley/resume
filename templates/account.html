@@ -13,211 +13,23 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/error-info.css') }}">
 </head>
 <body>
-    <div id="header-container" style="margin: 0; padding: 0;"></div>
+    <div id="header-container"></div>
     <div class="form-container">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Previous Analysis Records</h1>
-        <div id="records-wrapper">
-            <div class="loading">
-                <div class="loading-spinner"></div>
-            </div>
-        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Account Management</h1>
+        <p>Hello, <b id="user-email-display">Loading email...</b></p>
+
+        <hr style="padding:5px">
+        <p>To reset your password, <u><a href="./set_new_password">click here.</a></u></p>
     </div>
+    <script type="text/babel" src="{{ url_for('static', filename='js/header.js') }}"></script>
 
     <script type="text/babel">
-        // Get URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        let currentPage = parseInt(urlParams.get('page')) || 1;
-
-        // Fetch records function
-        const fetchRecords = async (page) => {
-            try {
-                const response = await fetch('http://127.0.0.1:5000/get_records', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': localStorage.getItem('authToken'),
-                        'Content-Type': 'application/json',
-                        "page": page,
-                    },
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('Error fetching records:', error);
-                return null;
-            }
-        };
-
-        // Records component
-        const RecordsDisplay =  ({ data }) => {
-            const { dates, ids, titles, complete, pagecount } = data;
-            
-            const handleRecordClick = async (id) => {
-                fetch('http://127.0.0.1:5000/get_single_record', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': localStorage.getItem('authToken'),
-                        'Content-Type': 'application/json',
-                        'id': id
-                    },
-                })
-                .then(async response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    const data = await response.json();
-                    const url = new URL('./response', window.location.href);
-                    for (const key in data) {
-                        url.searchParams.append(key, data[key]);
-                    }
-                    window.location.href = url;
-                })
-                .catch(error => {
-                    console.error('Error fetching single record:', error);
-                });
-            };
-            
-            const handlePageChange = (newPage) => {
-                if (newPage < 1 || newPage > pagecount) return;
-                
-                // Update URL without refreshing page
-                const url = new URL(window.location);
-                url.searchParams.set('page', newPage);
-                window.history.pushState({}, '', url);
-                
-                // Update current page and fetch records
-                currentPage = newPage;
-                loadRecords(currentPage);
-            };
-            
-            return React.createElement(
-                React.Fragment,
-                null,
-                React.createElement(
-                    "div",
-                    { className: "records-container" },
-                    titles.map((title, i) => 
-                        React.createElement(
-                            "div",
-                            {
-                                key: ids[i],
-                                className: `record-item ${complete[i] ? '' : 'incomplete'}`,
-                                onClick: () => handleRecordClick(ids[i])
-                            },
-                            React.createElement(
-                                "div",
-                                { className: "record-info" },
-                                React.createElement("h3", { className: "record-title" }, title),
-                                React.createElement("p", { className: "record-date" }, dates[i])
-                            ),
-                            React.createElement(
-                                "div",
-                                { className: "arrow-container" },
-                                React.createElement(
-                                    "svg",
-                                    {
-                                        xmlns: "http://www.w3.org/2000/svg",
-                                        width: "24",
-                                        height: "24",
-                                        viewBox: "0 0 24 24",
-                                        fill: "none",
-                                        stroke: "currentColor",
-                                        strokeWidth: "2",
-                                        strokeLinecap: "round",
-                                        strokeLinejoin: "round"
-                                    },
-                                    React.createElement("path", { d: "M9 18l6-6-6-6" })
-                                )
-                            )
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "pagination" },
-                    React.createElement(
-                        "div",
-                        {
-                            className: `pagination-arrow ${currentPage <= 1 ? 'disabled' : ''}`,
-                            onClick: () => currentPage > 1 && handlePageChange(currentPage - 1)
-                        },
-                        React.createElement(
-                            "svg",
-                            {
-                                xmlns: "http://www.w3.org/2000/svg",
-                                width: "24",
-                                height: "24",
-                                viewBox: "0 0 24 24",
-                                fill: "none",
-                                stroke: "currentColor",
-                                strokeWidth: "2",
-                                strokeLinecap: "round",
-                                strokeLinejoin: "round"
-                            },
-                            React.createElement("path", { d: "M15 18l-6-6 6-6" })
-                        )
-                    ),
-                    React.createElement(
-                        "div",
-                        { className: "page-info" },
-                        `Page ${currentPage} of ${pagecount}`
-                    ),
-                    React.createElement(
-                        "div",
-                        {
-                            className: `pagination-arrow ${currentPage >= pagecount ? 'disabled' : ''}`,
-                            onClick: () => currentPage < pagecount && handlePageChange(currentPage + 1)
-                        },
-                        React.createElement(
-                            "svg",
-                            {
-                                xmlns: "http://www.w3.org/2000/svg",
-                                width: "24",
-                                height: "24",
-                                viewBox: "0 0 24 24",
-                                fill: "none",
-                                stroke: "currentColor",
-                                strokeWidth: "2",
-                                strokeLinecap: "round",
-                                strokeLinejoin: "round"
-                            },
-                            React.createElement("path", { d: "M9 18l6-6-6-6" })
-                        )
-                    )
-                )
-            );
-        };
-
-        // Load records function
-        const loadRecords = async (page) => {
-            const recordsWrapper = document.getElementById('records-wrapper');
-            
-            // Show loading spinner
-            recordsWrapper.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                </div>
-            `;
-            
-            const data = await fetchRecords(page);
-            
-            if (data) {
-                const root = ReactDOM.createRoot(recordsWrapper);
-                root.render(<RecordsDisplay data={data} />);
-            } else {
-                recordsWrapper.innerHTML = `
-                    <div class="text-center py-10">
-                        <p class="text-gray-500">Failed to load records. Please try again later.</p>
-                    </div>
-                `;
-            }
-        };
-
         // Initialize records when page loads
         window.addEventListener('load', () => {
+            // Display user email from localStorage
+            const userEmail = localStorage.getItem("userEmail") || "No email found";
+            document.getElementById("user-email-display").textContent = userEmail;
+            
             // Load the header if available
             if (ReactDOM && window.DashboardHeader) {
                 const headerRoot = ReactDOM.createRoot(document.getElementById('header-container'));
@@ -225,11 +37,7 @@
             } else {
                 console.error('React or DashboardHeader component not loaded properly');
             }
-            
-            // Load records
-            loadRecords(currentPage);
         });
     </script>
-    <script type="text/babel" src="{{ url_for('static', filename='js/header.js') }}"></script>
 </body>
 </html>

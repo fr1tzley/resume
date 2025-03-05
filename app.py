@@ -136,9 +136,16 @@ def records():
     return render_template('records.html')
 
 @app.route('/account')
-def records():
+def account():
     return render_template('account.html')
 
+@app.route('/lost_password')
+def lost_password():
+    return render_template('lost_password.html')
+
+@app.route('/set_new_password')
+def set_new_password():
+    return render_template('set_new_password.html')
 def generate_verification_token(length=32):
     random_bytes = secrets.token_bytes(length)
     token = urlsafe_b64encode(random_bytes).decode('utf-8').rstrip('=')
