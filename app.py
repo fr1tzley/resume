@@ -5,7 +5,7 @@ from time import sleep
 from flask import Flask, request, render_template, redirect, session, jsonify
 from flask_login import LoginManager, UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, select
 from sqlalchemy.orm import DeclarativeBase
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -18,6 +18,8 @@ from flask_cors import CORS, cross_origin
 import logging
 
 from functools import wraps
+
+from dataclasses import dataclass
 
 from backend.gpt_messaging.gpt import get_gpt_results
 from backend.utils.text_extraction import extract_interview_notes, extract_job_description, extract_resume_info
@@ -65,6 +67,7 @@ limiter = Limiter(
 )
 class Base(DeclarativeBase):
     pass
+@dataclass
 class User(UserMixin, db.Model):
     __tablename__ = "appuser"
     id = db.Column(db.Integer, primary_key=True)
@@ -81,6 +84,7 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+@dataclass
 class GptAnalysis(db.Model):
     __tablename__ = "gptanalysis"
     
@@ -104,6 +108,8 @@ class GptAnalysis(db.Model):
     
     # Timestamp
     created_at = db.Column(db.DateTime, default=datetime.now())
+    title = db.Column(db.String(32), default="")
+    complete = db.Column(db.Boolean, default=False)
 with app.app_context():
     db.create_all()
 
@@ -128,6 +134,10 @@ def loginpage():
 @app.route('/records')
 def records():
     return render_template('records.html')
+
+@app.route('/account')
+def records():
+    return render_template('account.html')
 
 def generate_verification_token(length=32):
     random_bytes = secrets.token_bytes(length)
@@ -346,16 +356,52 @@ def analyze_response():
 @app.route('/get_records', methods=["GET"])
 def get_records():
     token = request.headers.get('Authorization')
+    page_number = int(request.headers.get("page"))
     data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
     current_user_id = data['user_id']
-    current_user = User.query.filter_by(id=current_user_id).first()
 
-    if not current_user:
-        return {"error": "User not found"}, 404
-    past_analyses = GptAnalysis.query.filter_by(user_id = current_user_id).all()
+    records_per_page = 10
+    stmt = (
+        select(GptAnalysis.title, GptAnalysis.created_at, GptAnalysis.id, GptAnalysis.complete)
+        .where(GptAnalysis.user_id == current_user_id)
+        .offset(records_per_page * (page_number - 1))
+        .limit(10)
+    )
+    
+    query_result = db.session.execute(stmt).fetchall()
+    records =  {
+            "titles": [r[0] for r in query_result],
+            "dates": [r[1] for r in query_result],
+            "ids":  [r[2] for r in query_result],
+            "complete": [r[3] for r in query_result]
+        } 
+    return jsonify(records), 200
+    
 
-    return jsonify(past_analyses), 200
+@app.route('/get_single_record', methods=["GET"])
+def get_single_record():
+    analysis_fields = [
+        "areas_of_improvement",
+        "areas_of_improvement_count",
+        "overall_conclusion",
+        "interview_fit",
+        "conclusion_oneline",
+        "satisfied_requirements",
+        "satisfied_requirements_count",
+        "strengths",
+        "strengths_count",
+        "unsatisfied_requirements",
+        "unsatisfied_requirements_count"
 
+    ]
+    record_id = request.headers.get('id')
+    token = request.headers.get('Authorization')
+    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    current_user_id = data['user_id']
+
+    record = GptAnalysis.query.filter_by(id=record_id, user_id=current_user_id).first()
+    
+    return jsonify({f:record.__dict__[f] for f in analysis_fields}), 200
 if __name__ == '__main__':
     app.run(debug=True)
 

@@ -17,7 +17,12 @@ const DashboardHeader = ({ initialActiveButton = 'new' }) => {
     } else if (buttonName == 'new') {
       const url = new URL('./upload', window.location.href);
       window.location.href = url;
-    };
+    } else if (buttonName == "account") {
+      
+      const url = new URL('./account', window.location.href);
+      window.location.href = url;
+
+    }
   };
   
   return (
@@ -50,8 +55,15 @@ const DashboardHeader = ({ initialActiveButton = 'new' }) => {
         </div>
         
         <div className="flex items-center">
-          <button className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg transition-all duration-200">
-            <span className="font-medium">Account</span>
+          <button 
+           onClick={() => handleButtonClick('account')}
+           className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            activeButton === 'account' 
+              ? 'bg-white text-blue-700 shadow-md' 
+              : 'bg-blue-500 text-white hover:bg-blue-400'
+          }`}
+        >
+          Account
           </button>
         </div>
       </div>

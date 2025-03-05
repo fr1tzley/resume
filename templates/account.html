@@ -221,7 +221,7 @@
             // Load the header if available
             if (ReactDOM && window.DashboardHeader) {
                 const headerRoot = ReactDOM.createRoot(document.getElementById('header-container'));
-                headerRoot.render(React.createElement(window.DashboardHeader, { initialActiveButton: 'previous' }));
+                headerRoot.render(React.createElement(window.DashboardHeader, { initialActiveButton: 'account' }));
             } else {
                 console.error('React or DashboardHeader component not loaded properly');
             }
