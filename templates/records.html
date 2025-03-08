@@ -13,8 +13,10 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/error-info.css') }}">
 </head>
 <body>
-    <div id="header-container" style="margin: 0; padding: 0;"></div>
+    <div id="header-container" style="width: 100%"></div>
     <div class="form-container">
+        <div id="error-bar" class="error-bar"></div>
+        <div id="info-bar" class="info-bar"></div>
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Previous Analysis Records</h1>
         <div id="records-wrapper">
             <div class="loading">
@@ -30,6 +32,7 @@
 
         // Fetch records function
         const fetchRecords = async (page) => {
+            hideErrorInfo()
             try {
                 const response = await fetch('http://127.0.0.1:5000/get_records', {
                     method: 'GET',
@@ -53,6 +56,7 @@
 
         // Records component
         const RecordsDisplay =  ({ data }) => {
+            hideErrorInfo()
             const { dates, ids, titles, complete, pagecount } = data;
             
             const handleRecordClick = async (id) => {
@@ -67,6 +71,7 @@
                 .then(async response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
+                        showBarWithMsg("error", "An error occurred while retrieving the information from the server.")
                     }
                     const data = await response.json();
                     const url = new URL('./response', window.location.href);
@@ -81,6 +86,7 @@
             };
             
             const handlePageChange = (newPage) => {
+                hideErrorInfo()
                 if (newPage < 1 || newPage > pagecount) return;
                 
                 // Update URL without refreshing page
@@ -231,5 +237,7 @@
         });
     </script>
     <script type="text/babel" src="{{ url_for('static', filename='js/header.js') }}"></script>
+    <script type="text/babel" src="{{ url_for('static', filename='js/errorInfoUtils.js') }}"></script>
+
 </body>
 </html>

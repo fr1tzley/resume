@@ -4,162 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Response Details</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-areas: 
-                "box1 box2"
-                "box3 box4"
-                "full-box full-box";
-            gap: 15px;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        .metric-box {
-            background: #ffffff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .metric-box:nth-child(1) { grid-area: box1; }
-        .metric-box:nth-child(2) { grid-area: box2; }
-        .metric-box:nth-child(3) { grid-area: box3; }
-        .metric-box:nth-child(4) { grid-area: box4; }
-        .metric-box:nth-child(5) { 
-            grid-area: full-box; 
-            grid-column: 1 / -1; 
-        }
-
-        .metric-title {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 10px;
-        }
-
-        .metric-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #333;
-        }
-        .response-container {
-            background: #ffffff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .response-field {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #555;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-            resize: none;
-            overflow: hidden;
-            min-height: 30px;
-        }
-    </style>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/response.css') }}">
 </head>
 <body>
+    <div id="header-container" style="width: 100%"></div>
+
+    <div class="page-header">
+        <div class="page-title">Candidate Analysis Results</div>
+    </div>
+
     <div class="container">
+        <div class="conclusion-box">
+            <div class="conclusion-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Overall Assessment
+            </div>
+            <div class="conclusion-value" id="conclusion_oneline">-</div>
+        </div>
+
         <div class="metrics-grid">
             <div class="metric-box">
-                <div class="metric-title">Satisfied Requirements</div>
+                <div class="metric-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Satisfied Requirements
+                </div>
                 <div class="metric-value" id="satisfied_requirements_count">-</div>
             </div>
             <div class="metric-box">
-                <div class="metric-title">Unsatisfied Requirements</div>
+                <div class="metric-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    Unsatisfied Requirements
+                </div>
                 <div class="metric-value" id="unsatisfied_requirements_count">-</div>
             </div>
             <div class="metric-box">
-                <div class="metric-title">Strengths</div>
+                <div class="metric-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Key Strengths
+                </div>
                 <div class="metric-value" id="strengths_count">-</div>
             </div>
             <div class="metric-box">
-                <div class="metric-title">Areas of Improvement</div>
+                <div class="metric-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Areas of Improvement
+                </div>
                 <div class="metric-value" id="areas_of_improvement_count">-</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-title">Conclusion</div>
-                <div class="metric-value" id="conclusion_oneline">-</div>
             </div>
         </div>
 
         <div class="response-container">
-            <h1>Response Details</h1>
+            <div class="section-heading">Detailed Analysis</div>
+            
             <div class="response-field">
-                <label for="overall_conclusion">Overall Conclusion Details:</label>
+                <label for="overall_conclusion">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    Overall Conclusion:
+                </label>
                 <textarea id="overall_conclusion" name="overall_conclusion" readonly></textarea>
             </div>
+            
             <div class="response-field">
-                <label for="satisfied_requirements">Satisfied Requirements:</label>
+                <label for="satisfied_requirements">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Satisfied Requirements:
+                </label>
                 <textarea id="satisfied_requirements" name="satisfied_requirements" readonly></textarea>
             </div>
+            
             <div class="response-field">
-                <label for="unsatisfied_requirements">Unsatisfied Requirements:</label>
+                <label for="unsatisfied_requirements">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    Unsatisfied Requirements:
+                </label>
                 <textarea id="unsatisfied_requirements" name="unsatisfied_requirements" readonly></textarea>
             </div>
+            
             <div class="response-field">
-                <label for="interview_fit">Interview Fit:</label>
+                <label for="interview_fit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Interview Fit:
+                </label>
                 <textarea id="interview_fit" name="interview_fit" readonly></textarea>
             </div>
+            
             <div class="response-field">
-                <label for="strengths">Strengths:</label>
+                <label for="strengths">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Strengths:
+                </label>
                 <textarea id="strengths" name="strengths" readonly></textarea>
             </div>
+            
             <div class="response-field">
-                <label for="areas_of_improvement">Areas of Improvement:</label>
+                <label for="areas_of_improvement">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Areas of Improvement:
+                </label>
                 <textarea id="areas_of_improvement" name="areas_of_improvement" readonly></textarea>
             </div>
         </div>
+
+        <div class="nav-buttons">
+            <button onclick="window.location.href='./records'" class="nav-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                Back to Records
+            </button>
+            <button onclick="window.print()" class="nav-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print Report
+            </button>
+        </div>
     </div>
+
+    <script type="text/babel" src="{{ url_for('static', filename='js/header.js') }}"></script>
+
+    <script type="text/babel">
+         window.addEventListener('load', () => {
+        if (ReactDOM && window.DashboardHeader) {
+        const headerRoot = ReactDOM.createRoot(document.getElementById('header-container'));
+        headerRoot.render(React.createElement(window.DashboardHeader));
+        } else {
+        console.error('React or DashboardHeader component not loaded properly');
+        }
+    });
+    </script>
 
     <script>
         window.onload = function() {
@@ -195,10 +169,9 @@
                         }
                     }
                 } catch(error) {
-                    console.log(error)
-                    continue
+                    console.log(error);
+                    continue;
                 }
-                
             }
     
             // Add event listener to dynamically resize on input
@@ -207,7 +180,28 @@
                     this.style.height = 'auto';
                     this.style.height = this.scrollHeight + 'px';
                 });
+                
+                // Initialize heights
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
             });
+
+            // Add color coding to metric values for better visualization
+            const satisfiedCount = document.getElementById('satisfied_requirements_count');
+            const unsatisfiedCount = document.getElementById('unsatisfied_requirements_count');
+            
+            if (satisfiedCount && satisfiedCount.textContent !== '-') {
+                const count = parseInt(satisfiedCount.textContent);
+                satisfiedCount.style.color = '#4285f4';  // Google blue
+            }
+            
+            if (unsatisfiedCount && unsatisfiedCount.textContent !== '-') {
+                const count = parseInt(unsatisfiedCount.textContent);
+                unsatisfiedCount.style.color = '#ea4335';  // Google red
+            }
+
+            document.getElementById('strengths_count').style.color = '#34a853';  // Google green
+            document.getElementById('areas_of_improvement_count').style.color = '#fbbc05';  // Google yellow
         };
     </script>
 </body>

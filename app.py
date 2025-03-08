@@ -21,7 +21,7 @@ from functools import wraps
 
 from dataclasses import dataclass
 
-from backend.gpt_messaging.gpt import get_gpt_results
+from backend.gpt_messaging.gpt import get_gpt_results, run_get_gpt_results
 from backend.utils.text_extraction import extract_interview_notes, extract_job_description, extract_resume_info
 from backend.utils.login_utils import send_verification_email, send_verification_email_sendgrid, validate_email, validate_password
 
@@ -108,6 +108,11 @@ class GptAnalysis(db.Model):
     
     # Timestamp
     created_at = db.Column(db.DateTime, default=datetime.now())
+    completed_at = db.Column(db.DateTime, default=datetime.now())
+
+    input_tokens_used = db.Column(db.Integer, default=0)
+    output_tokens_used = db.Column(db.Integer, default=0)
+
     title = db.Column(db.String(32), default="")
     complete = db.Column(db.Boolean, default=False)
 with app.app_context():
@@ -335,22 +340,56 @@ def analyze_response():
         requirements = data["requirements"]
         responsibilities = data["responsibilities"]
 
-        gpt_results = get_gpt_results((employment_history,educational_history,certifications,skills), (strengths, areas_of_improvement, job_fit), requirements, responsibilities)
+      
+        #BE CAREFUL, WE CURRENTLY ALWAYS USE 0 FOR THE JOB ID!!!!
         analysis = GptAnalysis(
             user_id=current_user_id,
-            satisfied_requirements=gpt_results.get('satisfied_requirements', 'None'),
-            unsatisfied_requirements=gpt_results.get('unsatisfied_requirements', 'None'),
-            interview_fit=gpt_results.get('interview_fit', ''),
-            strengths=gpt_results.get('strengths', ''),
-            areas_of_improvement=gpt_results.get('areas_of_improvement', ''),
-            conclusion_oneline=gpt_results.get('conclusion_oneline', ''),
-            overall_conclusion=gpt_results.get('overall_conclusion', ''),
-            strengths_count=gpt_results.get('strengths_count', 0),
-            areas_of_improvement_count=gpt_results.get('areas_of_improvement_count', 0),
-            satisfied_requirements_count=gpt_results.get('satisfied_requirements_count', 0),
-            unsatisfied_requirements_count=gpt_results.get('unsatisfied_requirements_count', 0),
-            created_at=datetime.now()
+            satisfied_requirements='None',
+            unsatisfied_requirements='None',
+            interview_fit='',
+            strengths='',
+            areas_of_improvement='',
+            conclusion_oneline='',
+            overall_conclusion='',
+            strengths_count=0,
+            areas_of_improvement_count=0,
+            satisfied_requirements_count=0,
+            unsatisfied_requirements_count=0,
+            input_tokens_used=0,
+            output_tokens_used=0,
+            created_at=datetime.now(),
+            completed_at=None  # Set to None initially
         )
+
+        # Assuming we need to save the analysis to get its ID
+        # If your framework auto-generates IDs on initialization, you might not need this step
+        db.session.add(analysis)
+        db.session.commit()  # This would typically generate an ID
+
+        gpt_results = run_get_gpt_results(
+            (employment_history, educational_history, certifications, skills), 
+            (strengths, areas_of_improvement, job_fit), 
+            requirements, 
+            responsibilities, 
+            current_user_id, 
+            analysis.id 
+        )
+
+        # Update the analysis object with the results
+        analysis.satisfied_requirements = gpt_results.get('satisfied_requirements', 'None')
+        analysis.unsatisfied_requirements = gpt_results.get('unsatisfied_requirements', 'None')
+        analysis.interview_fit = gpt_results.get('interview_fit', '')
+        analysis.strengths = gpt_results.get('strengths', '')
+        analysis.areas_of_improvement = gpt_results.get('areas_of_improvement', '')
+        analysis.conclusion_oneline = gpt_results.get('conclusion_oneline', '')
+        analysis.overall_conclusion = gpt_results.get('overall_conclusion', '')
+        analysis.strengths_count = gpt_results.get('strengths_count', 0)
+        analysis.areas_of_improvement_count = gpt_results.get('areas_of_improvement_count', 0)
+        analysis.satisfied_requirements_count = gpt_results.get('satisfied_requirements_count', 0)
+        analysis.unsatisfied_requirements_count = gpt_results.get('unsatisfied_requirements_count', 0)
+        analysis.input_tokens_used = gpt_results.get('input_tokens', 0)
+        analysis.output_tokens_used = gpt_results.get('output_tokens', 0)
+        analysis.completed_at = datetime.now()  # Update completion time
 
         db.session.add(analysis)
         db.session.commit()
