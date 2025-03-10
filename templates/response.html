@@ -10,6 +10,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/response.css') }}">
+    <style>
+        .bullet-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        
+        .bullet-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+        
+        .bullet-list li:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: currentColor;
+            border-radius: 50%;
+        }
+        
+        /* Add a subtle hover effect */
+        .bullet-list li:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
     <div id="header-container" style="width: 100%"></div>
@@ -98,7 +129,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     Strengths:
                 </label>
-                <textarea id="strengths" name="strengths" readonly></textarea>
+                <div id="strengths_container" class="bullet-list-container">
+                    <ul id="strengths_list" class="bullet-list strengths"></ul>
+                </div>
+                <textarea id="strengths" name="strengths" readonly style="display: none;"></textarea>
             </div>
             
             <div class="response-field">
@@ -106,8 +140,20 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     Areas of Improvement:
                 </label>
-                <textarea id="areas_of_improvement" name="areas_of_improvement" readonly></textarea>
+                <div id="improvements_container" class="bullet-list-container">
+                    <ul id="improvements_list" class="bullet-list improvements"></ul>
+                </div>
+                <textarea id="areas_of_improvement" name="areas_of_improvement" readonly style="display: none;"></textarea>
             </div>
+
+            <div class="response-field" id="custom_questions_display" style="display: none;">
+                <label for="custom_questions_and_answers" >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Custom Questions:
+                </label>
+                <textarea id="custom_questions_and_answers" name="custom_questions_and_answers" readonly></textarea>
+            </div>
+
         </div>
 
         <div class="nav-buttons">
@@ -150,6 +196,7 @@
                 satisfied_requirements_count: 'satisfied_requirements_count',
                 unsatisfied_requirements_count: 'unsatisfied_requirements_count',
                 strengths_count: 'strengths_count',
+                custom_questions_and_answers: 'custom_questions_and_answers',
                 areas_of_improvement_count: 'areas_of_improvement_count',
                 conclusion_oneline: "conclusion_oneline"
             };
@@ -159,13 +206,26 @@
                     const element = document.getElementById(inputId);
                     const value = urlParams.get(param);
                     if (value !== null) {
+                        if (inputId == "custom_questions_and_answers") {
+                            document.getElementById("custom_questions_display").style = "display: block;";
+                        }
+                        
+                        const decodedValue = decodeURIComponent(value.replace(/%(?![0-9][0-9a-fA-F]+)/g, '%25'));
+                        
                         if (element.tagName && element.tagName === 'TEXTAREA') {
-                            element.value = decodeURIComponent(value.replace(/%(?![0-9][0-9a-fA-F]+)/g, '%25'));
+                            element.value = decodedValue;
                             // Auto-resize textarea
                             element.style.height = 'auto';
                             element.style.height = element.scrollHeight + 'px';
+                            
+                            // Special handling for strengths and areas of improvement
+                            if (inputId === 'strengths') {
+                                populateBulletList('strengths_list', decodedValue);
+                            } else if (inputId === 'areas_of_improvement') {
+                                populateBulletList('improvements_list', decodedValue);
+                            }
                         } else {
-                            element.textContent = decodeURIComponent(value.replace(/%(?![0-9][0-9a-fA-F]+)/g, '%25'));
+                            element.textContent = decodedValue;
                         }
                     }
                 } catch(error) {
@@ -173,9 +233,43 @@
                     continue;
                 }
             }
+            
+            // Function to populate bullet lists
+            function populateBulletList(listId, textContent) {
+                const list = document.getElementById(listId);
+                if (!list) return;
+                
+                // Clear any existing content
+                list.innerHTML = '';
+                
+                // Split by newlines and process each line that starts with '-'
+                const lines = textContent.split('\n');
+                
+                lines.forEach(line => {
+                    // Check if line starts with '-' and has content after it
+                    if (line.trim().startsWith('-') && line.trim().length > 1) {
+                        const listItem = document.createElement('li');
+                        // Remove the leading '-' and trim whitespace
+                        listItem.textContent = line.trim().substring(1).trim();
+                        list.appendChild(listItem);
+                    } else if (line.trim().length > 0) {
+                        // For lines without '-' that have content, also add them
+                        const listItem = document.createElement('li');
+                        listItem.textContent = line.trim();
+                        list.appendChild(listItem);
+                    }
+                });
+                
+                // If no bullet points were found, fallback to show the original textarea
+                if (list.children.length === 0) {
+                    const textareaId = listId === 'strengths_list' ? 'strengths' : 'areas_of_improvement';
+                    document.getElementById(textareaId).style.display = 'block';
+                    document.getElementById(listId).parentElement.style.display = 'none';
+                }
+            }
     
             // Add event listener to dynamically resize on input
-            document.querySelectorAll('textarea').forEach(textarea => {
+            document.querySelectorAll('textarea:not([style*="display: none"])').forEach(textarea => {
                 textarea.addEventListener('input', function() {
                     this.style.height = 'auto';
                     this.style.height = this.scrollHeight + 'px';
@@ -191,12 +285,10 @@
             const unsatisfiedCount = document.getElementById('unsatisfied_requirements_count');
             
             if (satisfiedCount && satisfiedCount.textContent !== '-') {
-                const count = parseInt(satisfiedCount.textContent);
                 satisfiedCount.style.color = '#4285f4';  // Google blue
             }
             
             if (unsatisfiedCount && unsatisfiedCount.textContent !== '-') {
-                const count = parseInt(unsatisfiedCount.textContent);
                 unsatisfiedCount.style.color = '#ea4335';  // Google red
             }
 

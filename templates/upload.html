@@ -42,6 +42,7 @@
             <div>Requirements</div>
             <div id="requirements"></div>
         </div>
+
         <div style="height: 5px;"></div>
         <button type="button" class="collapsible">Resume Information</button>
         <div class="content">
@@ -64,6 +65,13 @@
             <div id="areas_of_improvement"></div>
             <div>Job Fit</div>
             <textarea id="job_fit" rows="8" cols="50"></textarea>
+        </div>
+
+        <button type="button" class="collapsible">Custom Questions</button>
+        <div class="content">
+            <div>Custom Questions</div>
+            <div id="custom_questions"></div>
+            
         </div>
         <div style="height: 5px;"></div>
         <button type="button" class="form-button" id="submit-for-analysis-button" onclick="submitForAnalysis()">Submit For Analysis</button>
@@ -91,7 +99,8 @@
         responsibilities: null,
         requirements: null,
         strengths: null,
-        areasOfImprovement: null
+        areasOfImprovement: null,
+        customQuestions: null,
         };
 
     // Setup all bullet list components with refs
@@ -101,17 +110,21 @@
         bulletListRefs.requirements = React.createRef();
         bulletListRefs.strengths = React.createRef();
         bulletListRefs.areasOfImprovement = React.createRef();
+        bulletListRefs.customQuestions = React.createRef();
         
         // Render each component with its ref
         const responsibilitiesRoot = ReactDOM.createRoot(document.getElementById('responsibilities'));
         const requirementsRoot = ReactDOM.createRoot(document.getElementById('requirements'));
         const strengthsRoot = ReactDOM.createRoot(document.getElementById('strengths'));
         const aopsRoot = ReactDOM.createRoot(document.getElementById('areas_of_improvement'));
+        const customQsRoot = ReactDOM.createRoot(document.getElementById('custom_questions'));
+
 
         responsibilitiesRoot.render(<BulletList ref={bulletListRefs.responsibilities} />);
         requirementsRoot.render(<BulletList ref={bulletListRefs.requirements} />);
         strengthsRoot.render(<BulletList ref={bulletListRefs.strengths} />);
         aopsRoot.render(<BulletList ref={bulletListRefs.areasOfImprovement} />);
+        customQsRoot.render(<BulletList ref={bulletListRefs.customQuestions} />)
     };
 
     // Call this function after your DOM is loaded
@@ -166,21 +179,30 @@
                     "requirements",
                     "responsibilities",
                     "strengths",
-                    "areas_of_improvement"
+                    "areas_of_improvement",
+                    "custom_questions"
                 ]
 
 
-        for (i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                var content = this.nextElementSibling;
-                if (content.style.display === "block") {
-                    content.style.display = "none";
-                } else {
-                    content.style.display = "block";
+                for (i = 0; i < coll.length; i++) {
+                    coll[i].addEventListener("click", function() {
+                        this.classList.toggle("active");
+                        var content = this.nextElementSibling;
+                        
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null;
+                            content.style.padding = "0";
+                            setTimeout(() => {
+                                content.style.display = "none";
+                            }, 400);
+                        } else {
+                            content.style.display = "block";
+                            content.style.padding = "20px";
+                            
+                            content.style.maxHeight = content.scrollHeight + 40 + "px"; 
+                        }
+                    });
                 }
-            });
-        }
 
 
         async function submitFiles() {
@@ -215,6 +237,9 @@
                
                 for(let i = 0; i < bulletListContents.length; i++){
                     currentId = bulletListContents[i]
+                    if (currentId === "custom_questions") {
+                        continue;
+                    }
                     currentBulletList = document.getElementById(currentId)
                     currentDataList = data[currentId]
                     for(let j = 1; j < currentDataList.length; j++) {

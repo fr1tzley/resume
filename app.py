@@ -99,6 +99,7 @@ class GptAnalysis(db.Model):
     areas_of_improvement = db.Column(db.Text, nullable=True)
     conclusion_oneline = db.Column(db.String(255), nullable=True)
     overall_conclusion = db.Column(db.Text, nullable=True)
+    custom_questions = db.Column(db.Text, nullable=True)
     
     # Count fields
     strengths_count = db.Column(db.Integer, default=0)
@@ -339,9 +340,9 @@ def analyze_response():
         job_fit = data["job_fit"]
         requirements = data["requirements"]
         responsibilities = data["responsibilities"]
+        custom_questions = data["custom_questions"]
 
       
-        #BE CAREFUL, WE CURRENTLY ALWAYS USE 0 FOR THE JOB ID!!!!
         analysis = GptAnalysis(
             user_id=current_user_id,
             satisfied_requirements='None',
@@ -351,6 +352,7 @@ def analyze_response():
             areas_of_improvement='',
             conclusion_oneline='',
             overall_conclusion='',
+            custom_questions='',
             strengths_count=0,
             areas_of_improvement_count=0,
             satisfied_requirements_count=0,
@@ -371,8 +373,9 @@ def analyze_response():
             (strengths, areas_of_improvement, job_fit), 
             requirements, 
             responsibilities, 
-            current_user_id, 
-            analysis.id 
+            custom_questions=custom_questions,
+            user_id=current_user_id, 
+            job_id=analysis.id 
         )
 
         # Update the analysis object with the results
@@ -383,6 +386,7 @@ def analyze_response():
         analysis.areas_of_improvement = gpt_results.get('areas_of_improvement', '')
         analysis.conclusion_oneline = gpt_results.get('conclusion_oneline', '')
         analysis.overall_conclusion = gpt_results.get('overall_conclusion', '')
+        analysis.custom_questions = gpt_results.get('custom_questions_and_answers', '')
         analysis.strengths_count = gpt_results.get('strengths_count', 0)
         analysis.areas_of_improvement_count = gpt_results.get('areas_of_improvement_count', 0)
         analysis.satisfied_requirements_count = gpt_results.get('satisfied_requirements_count', 0)
@@ -438,7 +442,6 @@ def get_single_record():
         "strengths_count",
         "unsatisfied_requirements",
         "unsatisfied_requirements_count"
-
     ]
     record_id = request.headers.get('id')
     token = request.headers.get('Authorization')

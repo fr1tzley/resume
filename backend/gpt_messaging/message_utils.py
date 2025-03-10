@@ -1,4 +1,4 @@
-from backend.gpt_messaging.gpt_messages import INTERVIEW_INSTRUCTIONS_MESSAGE, INTERVIEW_TASK_MESSAGE, REQUIREMENTS_INSTRUCTIONS_MESSAGE, REQUIREMENTS_TASK_MESSAGE, STRENGTHS_INSTRUCTIONS_MESSAGE, STRENGTHS_TASK_MESSAGE, WEAKNESSES_INSTRUCTIONS_MESSAGE, WEAKNESSES_TASK_MESSAGE, DECISION_TASK_MESSAGE, DECISION_INSTRUCTIONS_MESSAGE
+from backend.gpt_messaging.gpt_messages import INTERVIEW_INSTRUCTIONS_MESSAGE, INTERVIEW_TASK_MESSAGE, REQUIREMENTS_INSTRUCTIONS_MESSAGE, REQUIREMENTS_TASK_MESSAGE, STRENGTHS_INSTRUCTIONS_MESSAGE, STRENGTHS_TASK_MESSAGE, WEAKNESSES_INSTRUCTIONS_MESSAGE, WEAKNESSES_TASK_MESSAGE, DECISION_TASK_MESSAGE, DECISION_INSTRUCTIONS_MESSAGE, CUSTOM_QUESTION_TASK_MESSAGE, CUSTOM_QUESTION_INSTRUCTIONS_MESSAGE
 
 
 """
@@ -111,6 +111,35 @@ def weaknesses_to_messages(requirements,
     
     return messages
 
+
+def custom_question_to_messages(resume_messages, interview_messages, requirements, responsibilities, question):
+    messages = [
+        {"role": "system", "content": CUSTOM_QUESTION_TASK_MESSAGE},
+        {"role": "system", "content": CUSTOM_QUESTION_INSTRUCTIONS_MESSAGE},   
+    ]
+
+    messages += resume_messages[2:]
+    messages += interview_messages[2:]
+
+    messages.append({"role": "user", "content": "These are the requirements listed in the job posting."})
+
+    for i,req in enumerate(requirements): 
+        messages.append(
+            {"role": "user", "content": f"Requirement {i}: {req}"}
+        )
+
+    messages.append({"role": "user", "content": "These are the responsibilities listed in the job posting."})
+
+    for i,res in enumerate(responsibilities): 
+        messages.append(
+            {"role": "user", "content": f"Requirement {i}: {res}"}
+        )
+
+    messages.append({"role": "user", "content": question})
+
+    return messages
+    
+
 def decision_info_to_messages(requirements, interview_performance, strengths, areas_of_improvement, ):
     messages = [
         {"role": "system", "content": DECISION_TASK_MESSAGE},
@@ -140,3 +169,4 @@ def decision_info_to_messages(requirements, interview_performance, strengths, ar
         messages.append({"role":"user", "content":aop})
 
     return messages
+

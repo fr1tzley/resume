@@ -70,7 +70,7 @@ The user will send the following data:
 Given all of this information, your task is to provide a recommendation for whether the applicant should be hired or not, explaining your reasoning with reference to the information you have been given.
 """
 
-DECISION_INSTRUCTIONS_MESSAGE = """
+DECISION_INSTRUCTIONS_MESSAGE = """Your instructions are to do the following:
 1.Read through the information sent by the user.
 
 2.Decide whether the applicant should be hired, and to what degree they are suited for the job.
@@ -80,3 +80,18 @@ DECISION_INSTRUCTIONS_MESSAGE = """
 4.On the next line, provide a few sentences summarizing the information the user gave you and how it led you to your decision.
 """
 
+CUSTOM_QUESTION_TASK_MESSAGE = """You are a helpful assistant helping a company recruit new talent. Your task is to read through the applicant's resume, the job description, and the interview notes taken after the applicant was interviewed.
+
+After reading all of this information, the user will ask you a question about the applicant. You are to refer to the documents posted, and use the information found in those documents to answer that question to the best of your ability. Not all of the information in the documents may be relevant to the question being aksed.
+If the answer cannot be determined from the provided documents, you should tell the user that.
+"""
+
+CUSTOM_QUESTION_INSTRUCTIONS_MESSAGE = """Your instructions are to do the following:
+1.Read carefully through the documents sent by the user.
+
+2.See what question the user wants you to answer.
+
+3.Refer back to the information given and find any available relevant information to base your answer on. 
+
+4.Provide an answer to the question to the best of your ability, justifying your answer when possible.
+"""
