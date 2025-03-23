@@ -313,3 +313,34 @@ button {
         font-size: 24px;
     }
 }
+
+.enhanced-list.custom-questions {
+    margin-top: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 15px;
+}
+
+.enhanced-list.custom-questions .list-item {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.enhanced-list.custom-questions .list-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.enhanced-list.custom-questions .requirement-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1a73e8;
+}
+
+.enhanced-list.custom-questions .requirement-explanation {
+    color: #5f6368;
+    line-height: 1.5;
+    white-space: pre-line;
+}

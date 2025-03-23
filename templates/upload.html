@@ -99,8 +99,8 @@
         responsibilities: null,
         requirements: null,
         strengths: null,
-        areasOfImprovement: null,
-        customQuestions: null,
+        areas_of_improvement: null,
+        custom_questions: null,
         };
 
     // Setup all bullet list components with refs
@@ -109,8 +109,8 @@
         bulletListRefs.responsibilities = React.createRef();
         bulletListRefs.requirements = React.createRef();
         bulletListRefs.strengths = React.createRef();
-        bulletListRefs.areasOfImprovement = React.createRef();
-        bulletListRefs.customQuestions = React.createRef();
+        bulletListRefs.areas_of_improvement = React.createRef();
+        bulletListRefs.custom_questions = React.createRef();
         
         // Render each component with its ref
         const responsibilitiesRoot = ReactDOM.createRoot(document.getElementById('responsibilities'));
@@ -123,8 +123,8 @@
         responsibilitiesRoot.render(<BulletList ref={bulletListRefs.responsibilities} />);
         requirementsRoot.render(<BulletList ref={bulletListRefs.requirements} />);
         strengthsRoot.render(<BulletList ref={bulletListRefs.strengths} />);
-        aopsRoot.render(<BulletList ref={bulletListRefs.areasOfImprovement} />);
-        customQsRoot.render(<BulletList ref={bulletListRefs.customQuestions} />)
+        aopsRoot.render(<BulletList ref={bulletListRefs.areas_of_improvement} />);
+        customQsRoot.render(<BulletList ref={bulletListRefs.custom_questions} />)
     };
 
     // Call this function after your DOM is loaded

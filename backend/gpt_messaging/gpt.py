@@ -1,15 +1,16 @@
+import random
 from dotenv import load_dotenv
 import os
 
 import openai
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 from openai import AsyncOpenAI
 from tiktoken import *
 
 import asyncio
 
 #from gpt_messages import EDUCATION, EXPERIENCES, INTERVIEW_JOB_FIT, INTERVIEW_STRENGTHS, INTERVIEW_WEAKNESSES, REQUIREMENTS, SKILLS
-from backend.gpt_messaging.message_utils import decision_info_to_messages, interview_to_messages, resume_to_messages, strengths_to_messages, weaknesses_to_messages
+from backend.gpt_messaging.message_utils import custom_question_to_messages, decision_info_to_messages, interview_to_messages, resume_to_messages, strengths_to_messages, weaknesses_to_messages
 from backend.gpt_messaging.tokencounter import TokenCounter
 
 load_dotenv()
@@ -28,20 +29,48 @@ Checklist
 """
 
 counter = TokenCounter()
+stubbed = False
 
-async def send_messages(messages):
+async def send_messages(messages, max_retries=5, base_delay=10, max_delay=60):
+    if stubbed:
+        return "3"
+    
     counter.add_input_tokens(messages)
-    stream = await client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        stream=True,
-    )
-    accum = ""
-    async for chunk in stream:
-        if chunk.choices[0].delta.content is not None:
-            accum += chunk.choices[0].delta.content
-    counter.add_output_tokens(accum)
-    return accum
+    
+    attempt = 0
+    while True:
+        try:
+            stream = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=messages,
+                stream=True,
+            )
+            
+            accum = ""
+            async for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    accum += chunk.choices[0].delta.content
+            
+            counter.add_output_tokens(accum)
+            return accum
+            
+        except RateLimitError as e:
+            attempt += 1
+            if attempt > max_retries:
+                # We've exceeded our retry limit, so re-raise the exception
+                raise
+            
+            # Calculate the delay with exponential backoff and jitter
+            delay = min(max_delay, base_delay * (2 ** (attempt - 1)))
+            jitter = random.uniform(0, 0.1 * delay)  # 10% jitter
+            total_delay = delay + jitter
+            
+            print(f"Rate limit exceeded. Retrying in {total_delay:.2f} seconds (attempt {attempt}/{max_retries})...")
+            await asyncio.sleep(total_delay)
+        
+        except Exception as e:
+            # For other exceptions, we don't retry
+            raise
 
 async def requirements_fit(
         messages,
@@ -73,31 +102,45 @@ async def get_bullet_points(messages):
     points = [m for m in res if len(m) > 0 and m[0] == "-"]
     return points
     
-async def get_gpt_results(resume_info, interview_info, requirements, responsibilities, user_id, job_id):
+async def get_gpt_results(resume_info, interview_info, requirements, responsibilities, custom_questions=[], user_id=-1, job_id=-1):
     experiences, education, skills, certifications = resume_info
     interview_strengths, interview_weakneses, interview_job_fit = interview_info
 
+    resume_messages = resume_to_messages(experiences, education, skills, certifications)
+    interview_messages = interview_to_messages(interview_strengths, interview_weakneses, interview_job_fit)
 
-    r2m = resume_to_messages(experiences, education, skills, certifications)
-    #requirements_and_rating = [['Proven working experience as HR Manager or other HR Executive.', 'Y', 'The candidate has experience as an HR Manager at Global Enterprises since March 2018, which meets the requirement for proven working experience in an HR managerial role.'], ['People-oriented and results-driven.', 'Y', 'The candidate demonstrates a focus on employee relations, conflict resolution, and performance management, indicating a people-oriented approach, while the achievements such as increasing employee retention and satisfaction reflect a results-driven attitude.'], ['Demonstrable experience with Human Resources metrics.', 'Y', "The candidate's experience includes developing and executing HR strategies that led to an increase in employee retention, which demonstrates involvement in HR metrics. They also managed recruitment processes, indicating their use of metrics related to staffing effectiveness."], ['Knowledge of HR systems and databases.', 'Y', 'The candidate has listed HR systems such as Workday, ADP, and BambooHR, indicating they possess knowledge of HR systems and databases.'], ['Ability to architect strategy along with leadership skills.', 'Y', 'The candidate has experience in developing and executing HR strategies aligned with business objectives and demonstrates leadership skills through team building and staff development.'], ['Excellent active listening, negotiation, and presentation skills.', 'Y', 'The candidate lists "Negotiation" and "Presentation" under their communication skills, indicating they possess the required skills. Additionally, excellent active listening is typically implied in strong communication skills, which the candidate has demonstrated through their experiences in HR management.'], ['Competence to build and effectively manage interpersonal relationships at all levels of the company.', 'Y', 'The candidate has demonstrated skills in negotiation, conflict resolution, and employee relations, which are essential for building and managing interpersonal relationships effectively at all levels of a company.'], ['In-depth knowledge of labor law and HR best practices.', 'Y', 'The candidate has indicated knowledge in legal compliance regarding labor laws and employment regulations in their skills section, which demonstrates their in-depth understanding of labor law and HR best practices.'], ['Degree in Human Resources or related field.', 'Y', 'The candidate has an M.A. in Human Resources Management and a B.A. in Business Administration, which qualifies as a related field.']]
+    if custom_questions:
+        custom_questions_messages = custom_question_to_messages(resume_messages, interview_messages, requirements, responsibilities, custom_questions)
+        custom_questions_task = send_messages(custom_questions_messages)
+        custom_question_answers = await custom_questions_task
+        custom_question_and_answers = "\n".join([q + "\n" + a for q,a in zip(custom_questions, custom_question_answers)])
+        print(custom_question_answers)
+        custom_question_and_answers + """1.What is the highest level of education achieved by the applicant?:The applicant has a master's degree.
+        2.Does the applicant speak any languages other than English?:They speak Ancient Macedonian."""
+    else:
+        custom_question_and_answers = ""
 
-    requirements_and_rating_task = asyncio.create_task(requirements_fit(r2m, requirements))
+    
+
+    requirements_and_rating_task = asyncio.create_task(requirements_fit(resume_messages, requirements))
     requirements_and_rating = await requirements_and_rating_task
 
-    fit_task = asyncio.create_task(interview_notes_fit(interview_to_messages(interview_strengths, interview_weakneses, interview_job_fit)))
+
+    fit_task = asyncio.create_task(interview_notes_fit(interview_messages))
     strengths_task = asyncio.create_task(get_bullet_points(strengths_to_messages(requirements_and_rating, interview_strengths)))
     weaknesses_task = asyncio.create_task(get_bullet_points(weaknesses_to_messages(requirements_and_rating, interview_weakneses)))
     
     fit = await fit_task
     strengths = await strengths_task
     weaknesses = await weaknesses_task
+    
+    
 
     decision_msgs = decision_info_to_messages(requirements_and_rating, fit, strengths, weaknesses)
     conclusion_task = asyncio.create_task(send_messages(decision_msgs))
     
     overall_conclusion = (await conclusion_task).split("\n")
     conclusion_oneline, overall_conclusion = overall_conclusion[0], overall_conclusion[-1]
-    print("my work is complete")
 
     satisfied_reqs = []
     unsatisfied_reqs = []
@@ -129,16 +172,16 @@ async def get_gpt_results(resume_info, interview_info, requirements, responsibil
         "areas_of_improvement_count": aop_count,
         "satisfied_requirements_count": satreq_count,
         "unsatisfied_requirements_count": unsatreq_count,
+        "custom_question_and_answers": custom_question_and_answers,
     }
 
     retval.update(counter.get_counts())
     counter.reset()
     return retval
 
-def run_get_gpt_results(resume_info, interview_info, requirements, responsibilities, user_id, job_id):
+def run_get_gpt_results(resume_info, interview_info, requirements, responsibilities, custom_questions=[], user_id=0, job_id=0):
     """Wrapper function to run the async function from synchronous code."""
-    return asyncio.run(get_gpt_results(resume_info, interview_info, requirements, responsibilities, user_id, job_id))
+    return asyncio.run(get_gpt_results(resume_info, interview_info, requirements, responsibilities, custom_questions, user_id, job_id))
 
 if __name__ == "__main__":
-    args = {'resume_info': ('HR  Manager,  Global  Enterprises  March  2018  –  Present  ●  Developed  and  executed  HR  strategies  aligned  with  business  objectives,  resulting  in  a  20%  increase in employee retention. ●  Managed  end-to-end  recruitment  processes,  successfully  filling  over  100  positions  annually.  ●  Addressed  employee  grievances  and  implemented  conflict  resolution  strategies,  improving  workplace satisfaction by 15%. ●  Led  performance  management  initiatives,  including  annual  appraisals  and  development  plans.  ●  Ensured  compliance  with  labor  laws  and  company  policies,  reducing  legal  disputes  by  10%.  ,HR  Generalist,  Tech  Solutions  Inc.  June  2015  –  February  2018  ●  Assisted  in  the  recruitment  and  onboarding  of  new  employees,  enhancing  the  onboarding  process efficiency by 25%. ●  Managed  employee  benefits  programs,  achieving  a  95%  satisfaction  rate  among  staff.  ●  Conducted  training  sessions  on  company  policies  and  professional  development.  ●  Supported  performance  management  processes,  including  feedback  and  coaching.  ', ',  M.A.  in  Human  Resources  Management  University  of  Tokyo,  2013–2015  ,  B.A.  in  Business  Administration  Keio  University,  2009–2013 ', '●  Safety  and  Health  Promotion  Officer  (2008)  ●  HR  Software:  PeopleSoft,  SAP  (Advanced)  ●  English:  TOEIC  Score  780  (2008)  ●  Computer:  Microsoft  Word,  Excel,  PowerPoint  (Advanced)  \n ', '●  HR  Management:  Talent  Acquisition,  Employee  Relations,  Performance  Management  ●  HR  Systems:  Workday,  ADP,  BambooHR  ●  Legal  Compliance:  Labor  Laws,  Employment  Regulations  ●  Communication:  Negotiation,  Conflict  Resolution,  Presentation  ●  Leadership:  Team  Building,  Staff  Development,  Strategic  Planning  ●  Other:  Microsoft  Office  Suite,  Data  Analysis  '), 'interview_info': (['', '  Extensive  experience  in  HR  management,  with  a  focus  on  talent  acquisition  and  employee  \nrelations.\n ', '  Proficient  in  HR  systems  such  as  Workday  and  ADP.  ', '  Strong  understanding  of  labor  laws  and  HR  best  practices.  ', '  Excellent  communication  and  leadership  skills.  ', '  Proven  track  record  in  developing  and  implementing  HR  strategies  that  align  with  business  \nobjectives.\n'], [], "Taro  is  a  strong  candidate  for  the  HR  Manager  position,  bringing  a  wealth  of  experience  in  HR  management and a solid understanding of HR systems and legal compliance. His skills align well with the requirements of the role, particularly in talent acquisition and employee relations. He  would  be  a  valuable  addition  to  the  team,  with  a  short  learning  curve  to  adapt  to  the  company's  specific HR tools and international practices.  "), 'requirements': ['', '  Proven  working  experience  as  HR  Manager  or  other  HR  Executive.  ', '  People-oriented  and  results-driven.  ', '  Demonstrable  experience  with  Human  Resources  metrics.  ', '  Knowledge  of  HR  systems  and  databases.  ', '  Ability  to  architect  strategy  along  with  leadership  skills.  ', '  Excellent  active  listening,  negotiation,  and  presentation  skills.  ', '  Competence  to  build  and  effectively  manage  interpersonal  relationships  at  all  levels  of  the  \ncompany.\n ', '  In-depth  knowledge  of  labor  law  and  HR  best  practices.  ', '  Degree  in  Human  Resources  or  related  field.  '], 'responsibilities': ['', '  Develop  and  implement  HR  strategies  and  initiatives  aligned  with  the  overall  business  \nstrategy.\n ', '  Bridge  management  and  employee  relations  by  addressing  demands,  grievances,  or  other  \nissues.\n ', '  Manage  the  recruitment  and  selection  process.  ', '  Support  current  and  future  business  needs  through  the  development,  engagement,  \nmotivation,\n \nand\n \npreservation\n \nof\n \nhuman\n \ncapital.\n ', '  Develop  and  monitor  overall  HR  strategies,  systems,  tactics,  and  procedures  across  the  \norganization.\n ', '  Nurture  a  positive  working  environment.  ', '  Oversee  and  manage  a  performance  appraisal  system  that  drives  high  performance.  ', '  Maintain  pay  plans  and  benefits  programs.  ', '  Assess  training  needs  to  apply  and  monitor  training  programs.  ', '  Report  to  management  and  provide  decision  support  through  HR  metrics.  ', '  Ensure  legal  compliance  throughout  human  resource  management. ']}
-    run_get_gpt_results(**args)
+    questions = ["What is the highest level of eduation the applicant has achieved?", "Is the applicant proficient with any languages other than English?"]

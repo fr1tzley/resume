@@ -10,37 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/response.css') }}">
-    <style>
-        .bullet-list {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 0;
-        }
-        
-        .bullet-list li {
-            position: relative;
-            padding-left: 1.5rem;
-            margin-bottom: 0.75rem;
-            line-height: 1.5;
-        }
-        
-        .bullet-list li:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0.5rem;
-            width: 0.75rem;
-            height: 0.75rem;
-            background-color: currentColor;
-            border-radius: 50%;
-        }
-        
-        /* Add a subtle hover effect */
-        .bullet-list li:hover {
-            background-color: rgba(0, 0, 0, 0.03);
-            border-radius: 4px;
-        }
-    </style>
 </head>
 <body>
     <div id="header-container" style="width: 100%"></div>
@@ -97,7 +66,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
                     Overall Conclusion:
                 </label>
-                <textarea id="overall_conclusion" name="overall_conclusion" readonly></textarea>
+                <div id="overall_conclusion" class="enhanced-textbox" name="overall_conclusion"></div>
             </div>
             
             <div class="response-field">
@@ -105,7 +74,8 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     Satisfied Requirements:
                 </label>
-                <textarea id="satisfied_requirements" name="satisfied_requirements" readonly></textarea>
+                <div id="satisfied_requirements_list" class="enhanced-list requirements satisfied"></div>
+                <textarea id="satisfied_requirements" name="satisfied_requirements" readonly style="display: none;"></textarea>
             </div>
             
             <div class="response-field">
@@ -113,7 +83,8 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                     Unsatisfied Requirements:
                 </label>
-                <textarea id="unsatisfied_requirements" name="unsatisfied_requirements" readonly></textarea>
+                <div id="unsatisfied_requirements_list" class="enhanced-list requirements unsatisfied"></div>
+                <div id="unsatisfied_requirements" name="unsatisfied_requirements"  class="enhanced-textbox" style="display: none;">None!</div>
             </div>
             
             <div class="response-field">
@@ -121,7 +92,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Interview Fit:
                 </label>
-                <textarea id="interview_fit" name="interview_fit" readonly></textarea>
+                <div id="interview_fit" class="enhanced-textbox" name="interview_fit"></div>
             </div>
             
             <div class="response-field">
@@ -129,9 +100,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     Strengths:
                 </label>
-                <div id="strengths_container" class="bullet-list-container">
-                    <ul id="strengths_list" class="bullet-list strengths"></ul>
-                </div>
+                <div id="strengths_list" class="enhanced-list strengths"></div>
                 <textarea id="strengths" name="strengths" readonly style="display: none;"></textarea>
             </div>
             
@@ -140,18 +109,16 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     Areas of Improvement:
                 </label>
-                <div id="improvements_container" class="bullet-list-container">
-                    <ul id="improvements_list" class="bullet-list improvements"></ul>
-                </div>
+                <div id="improvements_list" class="enhanced-list improvements"></div>
                 <textarea id="areas_of_improvement" name="areas_of_improvement" readonly style="display: none;"></textarea>
             </div>
-
             <div class="response-field" id="custom_questions_display" style="display: none;">
-                <label for="custom_questions_and_answers" >
+                <label for="custom_questions" >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     Custom Questions:
                 </label>
-                <textarea id="custom_questions_and_answers" name="custom_questions_and_answers" readonly></textarea>
+                <div id="custom_questions_list" class="enhanced-list custom-questions"></div>
+                <textarea id="custom_questions" name="custom_questions" readonly style="display: none;"></textarea>
             </div>
 
         </div>
@@ -196,7 +163,7 @@
                 satisfied_requirements_count: 'satisfied_requirements_count',
                 unsatisfied_requirements_count: 'unsatisfied_requirements_count',
                 strengths_count: 'strengths_count',
-                custom_questions_and_answers: 'custom_questions_and_answers',
+                custom_questions: 'custom_questions',
                 areas_of_improvement_count: 'areas_of_improvement_count',
                 conclusion_oneline: "conclusion_oneline"
             };
@@ -206,10 +173,9 @@
                     const element = document.getElementById(inputId);
                     const value = urlParams.get(param);
                     if (value !== null) {
-                        if (inputId == "custom_questions_and_answers") {
+                        if (inputId == "custom_questions") {
                             document.getElementById("custom_questions_display").style = "display: block;";
                         }
-                        
                         const decodedValue = decodeURIComponent(value.replace(/%(?![0-9][0-9a-fA-F]+)/g, '%25'));
                         
                         if (element.tagName && element.tagName === 'TEXTAREA') {
@@ -218,14 +184,21 @@
                             element.style.height = 'auto';
                             element.style.height = element.scrollHeight + 'px';
                             
-                            // Special handling for strengths and areas of improvement
+                            // Handle special cases for enhanced lists
                             if (inputId === 'strengths') {
-                                populateBulletList('strengths_list', decodedValue);
+                                populateEnhancedList('strengths_list', decodedValue);
                             } else if (inputId === 'areas_of_improvement') {
-                                populateBulletList('improvements_list', decodedValue);
-                            }
+                                populateEnhancedList('improvements_list', decodedValue);
+                            } else if (inputId === 'satisfied_requirements') {
+                                parseRequirements(decodedValue, 'satisfied_requirements_list');
+                            } else if (inputId === 'unsatisfied_requirements') {
+                                parseRequirements(decodedValue, 'unsatisfied_requirements_list');
+                            } else if (inputId === 'custom_questions') {
+                                document.getElementById("custom_questions_display").style = "display: block;";
+                                parseCustomQuestions(decodedValue, 'custom_questions_list');
+                        }
                         } else {
-                            element.textContent = decodedValue;
+                            element.innerHTML = decodedValue;
                         }
                     }
                 } catch(error) {
@@ -234,37 +207,147 @@
                 }
             }
             
-            // Function to populate bullet lists
-            function populateBulletList(listId, textContent) {
+            // Function to parse requirements and create enhanced list
+            function parseRequirements(textContent, listElementId) {
+                const listElement = document.getElementById(listElementId);
+                if (!listElement) return;
+                
+                // Clear any existing content
+                listElement.innerHTML = '';
+                
+                const lines = textContent.split('\n');
+                let currentItem = null;
+                let currentExplanation = '';
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    
+                    // Check if line starts a new requirement
+                    if (line.startsWith('Requirement number')) {
+                        // If we already have a requirement, add it to the list
+                        if (currentItem) {
+                            currentItem.querySelector('.requirement-explanation').textContent = currentExplanation.trim();
+                            listElement.appendChild(currentItem);
+                        }
+                        
+                        // Create a new requirement item
+                        currentItem = document.createElement('div');
+                        currentItem.className = 'list-item';
+                        
+                        // Extract the requirement text from the line
+                        const requirementMatch = line.match(/Requirement number \d+:\s+(.*?)\s+:/);
+                        if (requirementMatch && requirementMatch[1]) {
+                            const titleElement = document.createElement('div');
+                            titleElement.className = 'requirement-title';
+                            titleElement.textContent = requirementMatch[1];
+                            
+                            const explanationElement = document.createElement('div');
+                            explanationElement.className = 'requirement-explanation';
+                            
+                            currentItem.appendChild(titleElement);
+                            currentItem.appendChild(explanationElement);
+                            
+                            // Reset explanation for the new requirement
+                            currentExplanation = '';
+                        }
+                    } 
+                    // If not a new requirement and not empty, it's part of the explanation
+                    else if (line && currentItem) {
+                        currentExplanation += line + '\n';
+                    }
+                }
+                
+                // Add the last requirement
+                if (currentItem) {
+                    currentItem.querySelector('.requirement-explanation').textContent = currentExplanation.trim();
+                    listElement.appendChild(currentItem);
+                }
+                
+                // If no requirements were found, show the original textarea
+                if (listElement.children.length === 0) {
+                    document.getElementById(listElementId.replace('_list', '')).style.display = 'block';
+                    listElement.style.display = 'none';
+                }
+            }
+
+            // Function to parse custom questions
+            function parseCustomQuestions(textContent, listElementId) {
+                const listElement = document.getElementById(listElementId);
+                if (!listElement) return;
+                
+                // Clear any existing content
+                listElement.innerHTML = '';
+                
+                // Parse the questions which are formatted like:
+                // 1.[Full question text]: [Question answer]
+                // 2.[Full question text]: [Question answer]
+                
+                const regex = /(\d+)\.\s*(.*?\??):\s*([\s\S]*?)(?=\n\d+\.\s|$)/g;
+                let match;
+                let foundQuestions = false;
+                
+                while ((match = regex.exec(textContent + "\n")) !== null) {
+                    foundQuestions = true;
+                    const questionNumber = match[1];
+                    const questionText = match[2];
+                    const answer = match[3].trim();
+                    
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-item';
+                    
+                    const titleElement = document.createElement('div');
+                    titleElement.className = 'requirement-title';
+                    titleElement.textContent = `${questionNumber}. ${questionText}`;
+                    
+                    const explanationElement = document.createElement('div');
+                    explanationElement.className = 'requirement-explanation';
+                    explanationElement.textContent = answer;
+                    
+                    listItem.appendChild(titleElement);
+                    listItem.appendChild(explanationElement);
+                    listElement.appendChild(listItem);
+                }
+                
+                // If no questions were found, show the original textarea
+                if (!foundQuestions) {
+                    document.getElementById(listElementId.replace('_list', '_and_answers')).style.display = 'block';
+                    listElement.style.display = 'none';
+                }
+            }
+            
+            // Function to populate strengths and improvements
+            function populateEnhancedList(listId, textContent) {
                 const list = document.getElementById(listId);
                 if (!list) return;
                 
                 // Clear any existing content
                 list.innerHTML = '';
                 
-                // Split by newlines and process each line that starts with '-'
+                // Split by newlines and process each line
                 const lines = textContent.split('\n');
                 
                 lines.forEach(line => {
-                    // Check if line starts with '-' and has content after it
-                    if (line.trim().startsWith('-') && line.trim().length > 1) {
-                        const listItem = document.createElement('li');
-                        // Remove the leading '-' and trim whitespace
-                        listItem.textContent = line.trim().substring(1).trim();
-                        list.appendChild(listItem);
-                    } else if (line.trim().length > 0) {
-                        // For lines without '-' that have content, also add them
-                        const listItem = document.createElement('li');
-                        listItem.textContent = line.trim();
+                    // Check if line has content (starts with '-' or not)
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.length > 0) {
+                        const listItem = document.createElement('div');
+                        listItem.className = 'list-item';
+                        
+                        // Remove the leading '-' if it exists
+                        if (trimmedLine.startsWith('-')) {
+                            listItem.textContent = trimmedLine.substring(1).trim();
+                        } else {
+                            listItem.textContent = trimmedLine;
+                        }
+                        
                         list.appendChild(listItem);
                     }
                 });
                 
-                // If no bullet points were found, fallback to show the original textarea
+                // If no items were found, fallback to show the original textarea
                 if (list.children.length === 0) {
-                    const textareaId = listId === 'strengths_list' ? 'strengths' : 'areas_of_improvement';
-                    document.getElementById(textareaId).style.display = 'block';
-                    document.getElementById(listId).parentElement.style.display = 'none';
+                    document.getElementById(listId.replace('_list', '')).style.display = 'block';
+                    list.style.display = 'none';
                 }
             }
     

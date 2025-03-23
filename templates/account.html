@@ -6,25 +6,41 @@
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Removed Recharts as we're using simpler visualization -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Previous Analysis Records</title>
+    <title>Account Management</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/records.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/error-info.css') }}">
 </head>
-<body>
+<body class="bg-gray-50">
     <div id="header-container"></div>
-    <div class="form-container">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Account Management</h1>
-        <p>Hello, <b id="user-email-display">Loading email...</b></p>
-
-        <hr style="padding:5px">
-        <p>To reset your password, <u><a href="./set_new_password">click here.</a></u></p>
+    <div class="container mx-auto px-4 py-8">
+        <div class="form-container max-w-4xl mx-auto">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Account Management</h1>
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <p>Hello, <b id="user-email-display">Loading email...</b></p>
+                <hr class="my-4">
+                <p>To reset your password, <u><a href="./set_new_password" class="text-blue-600 hover:text-blue-800">click here.</a></u></p>
+            </div>
+            
+            <!-- Add the usage graph container -->
+            <div id="usage-graph-container"></div>
+            
+            <!-- Add the payment form container -->
+            <div id="payment-form-container"></div>
+        </div>
     </div>
+    
     <script type="text/babel" src="{{ url_for('static', filename='js/header.js') }}"></script>
+    <!-- Add the component scripts -->
+    <script type="text/babel" src="{{ url_for('static', filename='js/UsageGraph.js') }}"></script>
+    <script type="text/babel" src="{{ url_for('static', filename='js/PaymentForm.js') }}"></script>
 
     <script type="text/babel">
-        // Initialize records when page loads
+        // No need to set up Recharts components
+        
+        // Initialize when page loads
         window.addEventListener('load', () => {
             // Display user email from localStorage
             const userEmail = localStorage.getItem("userEmail") || "No email found";
@@ -36,6 +52,22 @@
                 headerRoot.render(React.createElement(window.DashboardHeader, { initialActiveButton: 'account' }));
             } else {
                 console.error('React or DashboardHeader component not loaded properly');
+            }
+            
+            // Load the usage graph
+            if (ReactDOM && window.UsageGraph) {
+                const graphRoot = ReactDOM.createRoot(document.getElementById('usage-graph-container'));
+                graphRoot.render(React.createElement(window.UsageGraph));
+            } else {
+                console.error('React or UsageGraph component not loaded properly');
+            }
+            
+            // Load the payment form
+            if (ReactDOM && window.PaymentForm) {
+                const paymentFormRoot = ReactDOM.createRoot(document.getElementById('payment-form-container'));
+                paymentFormRoot.render(React.createElement(window.PaymentForm));
+            } else {
+                console.error('React or PaymentForm component not loaded properly');
             }
         });
     </script>

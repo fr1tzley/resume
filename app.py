@@ -441,7 +441,8 @@ def get_single_record():
         "strengths",
         "strengths_count",
         "unsatisfied_requirements",
-        "unsatisfied_requirements_count"
+        "unsatisfied_requirements_count",
+        "custom_questions"
     ]
     record_id = request.headers.get('id')
     token = request.headers.get('Authorization')

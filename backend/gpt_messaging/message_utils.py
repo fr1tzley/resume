@@ -112,7 +112,7 @@ def weaknesses_to_messages(requirements,
     return messages
 
 
-def custom_question_to_messages(resume_messages, interview_messages, requirements, responsibilities, question):
+def custom_question_to_messages(resume_messages, interview_messages, requirements, responsibilities, questions):
     messages = [
         {"role": "system", "content": CUSTOM_QUESTION_TASK_MESSAGE},
         {"role": "system", "content": CUSTOM_QUESTION_INSTRUCTIONS_MESSAGE},   
@@ -132,10 +132,12 @@ def custom_question_to_messages(resume_messages, interview_messages, requirement
 
     for i,res in enumerate(responsibilities): 
         messages.append(
-            {"role": "user", "content": f"Requirement {i}: {res}"}
+            {"role": "user", "content": f"responsibilities {i}: {res}"}
         )
 
-    messages.append({"role": "user", "content": question})
+    messages.append({"role": "user", "content": "Please provide answers to these questions in the format of a numbered list."})
+    for i,q in enumerate(questions): 
+        messages.append({"role": "user", "content": f"Question #{i}. {q}"})
 
     return messages
     
